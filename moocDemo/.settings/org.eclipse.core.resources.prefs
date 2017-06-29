@@ -1,2 +1,4 @@
 eclipse.preferences.version=1
-encoding//demo/getUrls.py=utf8
+encoding//demo/dao/urlsDao.py=utf8
+encoding//demo/exeDig/getNews.py=utf8
+encoding//demo/exeDig/getUrls.py=utf8

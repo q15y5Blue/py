@@ -2,6 +2,7 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import re
+from demo.dao import urlsDao
 
 url= "http://news.163.com/rank/"
 
@@ -20,10 +21,8 @@ def getUrls(url):
             lists.append(url["href"])
     return lists
 
-#######################################################################################
-#for urls in getUrsl(url) :                                                           #   
-#    if re.search("\d+\/\d+\/\d+",urls["href"]) :                                     #
-#        print(urls.get_text(),"--------",urls["href"])                               #
-#######################################################################################
-print(getUrls(url))    
-    
+def updateUrlTable(urlName,urlHref):
+    urlsDao.updateUrls(urlName,urlHref)
+   
+print(updateUrlTable('百度','http://www.baidu.com'))   
+
