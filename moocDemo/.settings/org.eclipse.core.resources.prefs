@@ -1,5 +1,6 @@
 eclipse.preferences.version=1
 encoding//demo/dao/urlsDao.py=utf8
+encoding//demo/entity/news.py=utf8
 encoding//demo/execute/getNews.py=utf8
 encoding//demo/execute/getUrls.py=utf8
 encoding//fileMode/fileMode.py=utf8
