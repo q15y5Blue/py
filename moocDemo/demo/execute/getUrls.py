@@ -6,7 +6,7 @@ from demo.dao import urlsDao
 
 url= "http://news.163.com/rank/"
 
-#获取新闻url
+#获取新闻list<url> listUrls
 def getUrls(url):
     resp = urlopen(url).read().decode("gbk") #get response
     soup=BeautifulSoup(resp,"html.parser")   #response 解析

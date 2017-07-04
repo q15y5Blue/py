@@ -1,6 +1,16 @@
 #coding:utf8
 #class类 并且还有类似Java的一些set get方法
+from datetime import datetime
 class News(object):
+    @property
+    def id(self):
+        return self.id
+    
+    @id.setter
+    def id(self,value):
+        if not isinstance(value,int):
+            raise ValueError("必须是int类型的id")
+        self._value=value
     
     #新闻内容
     @property
@@ -15,14 +25,14 @@ class News(object):
     
     #新闻作者
     @property
-    def author(self):
-        return self._author
+    def authors(self):
+        return self._authors
     
-    @author.setter
-    def author(self, value):
+    @authors.setter
+    def authors(self, value):
         if not isinstance(value, str):
             raise ValueError("type must be str~")
-        self._auther = value
+        self._authers = value
     
     #新闻url
     @property
@@ -47,12 +57,13 @@ class News(object):
         self._src = value
     
     #新闻发布时间
-    #property
-    def time(self):
-        return self._time
+    @property
+    def tim(self):
+        return self._tim
     
-    @time.setter
-    def time(self,value):
-        if not isinstance(value,str):
-            raise ValueError("type must be str~!")
-        self._time = value
+    #时间
+    @tim.setter
+    def tim(self,value):
+        if not isinstance(value,datetime):
+            raise ValueError("type must be float~!")
+        self._tim = value
