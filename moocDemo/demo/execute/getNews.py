@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 import re
 from demo.entity.news import News
 from datetime import datetime
-from demo.dao import NewsDao
 #在beautifulsoup中prettify()才是获取字符串的方法
 #根据Url获取News对象
 #根据url获取详细的news对象

@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
+encoding//WebCraw/spider_main.py=utf8
+encoding//WebCraw/url_manager/urlDown.py=utf8
 encoding//demo/dao/NewsDao.py=utf8
 encoding//demo/dao/urlsDao.py=utf8
 encoding//demo/entity/news.py=utf8
