@@ -20,17 +20,18 @@ class UrlManager(object):
 
     #添加新urls，添加到url管理器中
     def add_new_urls(self,urls):
-        if urls in None or len(urls) == 0:
+        if urls is None or len(urls) == 0:
             return 
         for url in urls :
             self.add_new_url(url)
         
     #是否有新的url
     def has_new_url(self):
+        print("新url藏毒",len(self.new_urls))
         return len(self.new_urls)!=0
     
     #获取下一条url,待解析
     def get_new_url(self):
-        new_url =self.new_urls.pop()
+        new_url = self.new_urls.pop()
         self.old_urls.add(new_url)
         return new_url
