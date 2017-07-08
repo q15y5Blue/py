@@ -9,10 +9,10 @@ class SpiderMain(object):
 
     #初始化
     def __init__(self):
-        self.urls=url_manager.UrlManager()              #url管理器
-        self.downloader=html_downloader.HtmlDownloader()#网页下载器
-        self.parser=html_parser.HtmlParser()             #网页解析器
-        self.outputer=html_outputer.HtmlOutputer()      #网页输出
+        self.urls=url_manager.UrlManager()                  #url管理器  建立urls对象
+        self.downloader=html_downloader.HtmlDownloader()    #网页下载器  建立downloader对象
+        self.parser=html_parser.HtmlParser()                #网页解析器  建立parser对象
+        self.outputer=html_outputer.HtmlOutputer()          #网页输出      建立outputer对象
     
     #爬虫方法
     def craw(self, root_url):
@@ -27,7 +27,7 @@ class SpiderMain(object):
                 print("下载器启动")
                 html_cont=self.downloader.download(new_url)
                 print("启动解析器")
-                new_urls,new_data=self.parser.parser(new_url,html_cont)
+                new_urls,new_data=self.parser.parser(new_url,html_cont)   #解析新的url  和新的 data
                 print("解析新的url")
                 self.urls.add_new_urls(new_urls)##############
                 print("数据收集器")

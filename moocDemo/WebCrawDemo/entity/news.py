@@ -2,6 +2,7 @@
 #class类 并且还有类似Java的一些set get方法
 from datetime import datetime
 class News(object):
+   
     
     @property
     def title(self):
@@ -11,7 +12,7 @@ class News(object):
     def title(self,value):
         if not isinstance(value,str):
             raise ValueError("strrrrrrrrrrrrrrrrrr!")
-        self.title=value
+        self._title=value
         
     @property
     def id(self):
@@ -21,7 +22,7 @@ class News(object):
     def id(self,value):
         if not isinstance(value,int):
             raise ValueError("必须是int类型的id")
-        self._id=value
+        self.id=value
     
     #新闻内容
     @property

@@ -27,7 +27,6 @@ class UrlManager(object):
         
     #是否有新的url
     def has_new_url(self):
-        print("新url藏毒",len(self.new_urls))
         return len(self.new_urls)!=0
     
     #获取下一条url,待解析
