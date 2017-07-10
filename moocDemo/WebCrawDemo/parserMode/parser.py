@@ -6,8 +6,7 @@ Created on 2017年7月7日
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
-import urllib.request
-
+from WebCrawDemo.downloadMode.downloader import Downloader
 from WebCrawDemo.entity.news import News
 
 class Parser(object):
@@ -17,30 +16,47 @@ class Parser(object):
         news=News()
         #soup=html_doc
         #title get  
+        #news.title(soup.h1.string)
         news.title=soup.h1.string
-    
+        
         #content get
-        listAllPage=soup.findAll('p')
+        listAllPage=soup.find_all('p')
         starStr="""f_center"""
-        num=0
-        for st in listAllPage :
-            if st.prettify().__contains__(starStr) :
-                num=listAllPage.index(st)
-                del listAllPage[0:num]
-                del listAllPage[-6:-1]
-                content=" ".join('%s' %it for it in listAllPage)
-                news.content=content
-
+        endStr="""<p></p>"""
+        
+        contentStr=' '.join('%s' %it for it in listAllPage)
+        print(contentStr)
+        #<p><!-- AD200x300_2 -->
+        ####################################################################BUG
+#         startNum=0
+#         endNum=0
+#         for st in listAllPage :
+#             if st.prettify().__contains__(starStr) :
+#                 startNum=listAllPage.index(st)
+#                 del listAllPage[0:startNum]
+#                 if st.prettify().__contains__(endStr):
+#                     endNum=listAllPage.index(st)
+#                     del listAllPage[endNum:-1]
+#                     content=" ".join('%s' %it for it in listAllPage)
+#                     news.content=content
+        
         #author and time
         author=soup.find("div",class_="post_time_source")
         ti=re.search("\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d",author.__str__())
         datetimeObj=datetime.strptime(ti.group(0),"%Y-%m-%d %H:%M:%S")
+        #news.tim(datetimeObj)
         news.tim=datetimeObj
     
         #author get
-        news._authors=re.search("(?<=>).*?(?=</a>)",author.__str__()).group(0)
+        
+        authorStr=re.search("(?<=>).*?(?=</a>)",author.__str__()).group(0)
+        #news.authors(authorStr)
+        news.authors=authorStr
+        #news.url(url)
         news.url=url
+        #news.src("网易新闻")
         news.src="网易新闻"
+        
         print("爬到了一个新闻  标题为:",news.title)
         return news
     
@@ -61,3 +77,11 @@ class Parser(object):
 
     def parseData(self,html_doc,url):
         return self._getNewsByHTML(html_doc,url)
+    
+    def test(self):
+        srcStr= r"http://news.163.com/17/0709/10/COT7VA5V000187VG.html"
+        st=Downloader()
+        self._getNewsByHTML(html_doc= st.downloadHTML(srcStr),url=srcStr)
+        
+t=Parser()
+t.test()

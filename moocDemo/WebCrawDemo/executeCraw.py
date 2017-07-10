@@ -4,7 +4,6 @@ from WebCrawDemo.downloadMode   import downloader
 from WebCrawDemo.parserMode     import parser
 from WebCrawDemo.DaoMode        import daoMode
 class CrawExecute(object):
-    
     def __init__(self):
         self.urlObj=urlManager.UrlManager()             #urlManager
         self.downloadObj=downloader.Downloader()        #downloader
@@ -26,14 +25,14 @@ class CrawExecute(object):
             else:    
                 #对新闻的爬虫
                 newUrl=self.urlObj.getNewUrl()
-                html_doc=self.downloadObj.downloadHTML(newUrl)#根据url下载网页内容
-                news=self.parserObj.parseData(html_doc,newUrl)#根据网页内容和url解析新闻
-                print(news._content)
-                #self.daoModeObj.updateNews(news)              #
-            count+=1
-            print(count)
+                html_doc=self.downloadObj.downloadHTML(newUrl) #根据url下载网页内容
+                newst=self.parserObj.parseData(html_doc,newUrl)#根据网页内容和url解析新闻
+                self.daoModeObj.updateNews(newst)              #
             
-#main方法
+            count+=1
+        print("爬虫程序结束，爬取新闻数量：",count)
+            
+#main方法 
 if __name__=="__main__":
     rootUrl="http://news.163.com/rank/"
     spider=CrawExecute()
