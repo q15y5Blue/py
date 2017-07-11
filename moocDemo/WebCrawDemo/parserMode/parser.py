@@ -21,11 +21,11 @@ class Parser(object):
         
         #content get
         listAllPage=soup.find_all('p')
-        starStr="""f_center"""
-        endStr="""<p></p>"""
-        
         contentStr=' '.join('%s' %it for it in listAllPage)
-        print(contentStr)
+        regex="""<p>.*?</p>"""
+        matches = re.findall(regex,contentStr)
+        contentStr=' '.join('%s' %it for it in matches)
+        news.content=contentStr
         #<p><!-- AD200x300_2 -->
         ####################################################################BUG
 #         startNum=0
