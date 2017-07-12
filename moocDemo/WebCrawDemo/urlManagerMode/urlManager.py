@@ -3,6 +3,7 @@ Created on 2017年7月7日
 
 @author: q15y5Blue
 '''
+import re
 
 class UrlManager(object):
     
@@ -34,11 +35,13 @@ class UrlManager(object):
         for url in urlList:
             self.addNewUrl(url)
     
-    
-    
-    
-    
-    
-
-
-
+    #url转换
+    #http://news.163.com/17/0711/09/CP29MMOJ0001899O.html
+    def parseUrl(self,url):
+        replyUrl="http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/COUVUIIV0001875N/comments/newList?offset=30&limit=30&headLimit=1&tailLimit=2&ibc=newspc&_=1499822896888"
+        newUrl=re.search(""".{16}(?=.html)""", url)
+        return newUrl
+def getURL(intA,intB):
+    replyUrl=r"http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/COUVUIIV0001875N/comments/newList?offset=%intA&limit=%intB",intA,intB
+    return replyUrl
+print(getURL(30,30))

@@ -14,4 +14,3 @@ def updateUrls(urlName,urlHref):
             connect.commit()#提交
     finally:
         connect.close()
-

@@ -31,7 +31,13 @@ class CrawExecute(object):
             
             count+=1
         print("爬虫程序结束，爬取新闻数量：",count)
-            
+        
+    #根据url获取news对象的回复
+    def getNewsDetails(self,url):
+        if url is  None :
+            return
+        
+        
 #main方法 
 if __name__=="__main__":
     rootUrl="http://news.163.com/rank/"
