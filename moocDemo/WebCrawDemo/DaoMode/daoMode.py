@@ -21,3 +21,8 @@ class DaoMode(object):
         finally:
             cursors.close()
             print("关闭游标")
+    
+    def updateReply(self,reply):
+        pass
+    
+    

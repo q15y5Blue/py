@@ -6,11 +6,17 @@ Created on 2017年7月7日
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
-from WebCrawDemo.downloadMode.downloader import Downloader
 from WebCrawDemo.entity.news import News
 
 class Parser(object):
     
+    #根据url获取news对象的回复
+    def _getNewsDetails(self,url):
+        if url is  None :
+            return
+    
+    
+    #根据url解析news对象
     def _getNewsByHTML(self,html_doc,url):  
         soup=BeautifulSoup(html_doc,"html.parser")   #response 解析
         news=News()
@@ -78,10 +84,10 @@ class Parser(object):
     def parseData(self,html_doc,url):
         return self._getNewsByHTML(html_doc,url)
     
-    def test(self):
-        srcStr= r"http://news.163.com/17/0709/10/COT7VA5V000187VG.html"
-        st=Downloader()
-        self._getNewsByHTML(html_doc= st.downloadHTML(srcStr),url=srcStr)
+    #根据url获取新闻评论
+    def parseDetails(self,url):
+        return self._getNewsDetails(url)
+    
         
 t=Parser()
 t.test()
