@@ -8,7 +8,6 @@ import urllib.request as urllib2
 #网页下载器，只负责把网页下载下来
 class HtmlDownloader(object):
     
-    
     def download(self,url):
         if url is None :
             return None

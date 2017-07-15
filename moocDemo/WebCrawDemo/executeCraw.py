@@ -26,13 +26,17 @@ class CrawExecute(object):
             else:    
                 #对新闻的爬虫
                 newUrl=self.urlObj.getNewUrl()
-                html_doc=self.downloadObj.downloadHTML(newUrl) #根据url下载网页内容
-                newst=self.parserObj.parseData(html_doc,newUrl)#根据网页内容和url解析新闻
-                reply=self.parserObj.parseDetails(newst.url)#####news added
-                self.daoModeObj.updateNews(newst)      
-                self.daoModeObj.updateReply(reply)   #####news added    
+                
+                html_doc=self.downloadObj.downloadHTML(newUrl)   #根据url下载网页内容
+                newst=self.parserObj.parseData(html_doc,newUrl)  #根据网页内容和url解析新闻
+                
+                replyUrl=self.urlObj.convertUrl(newst.url)           #reply url
+                html_reply=self.downloadObj.downloadHTML(replyUrl)   #reply html
+                reply=self.parserObj.parseDetails(replyUrl)          #reply data
+                #self.daoModeObj.updateNews(newst)
+                #self.daoModeObj.updateReply(reply)               #####news added    
             count+=1
-        print("爬虫程序结束，爬取新闻数量：",count)
+        print("爬虫程序结束,爬取新闻数量：",count)
         
 #main方法 
 if __name__=="__main__":

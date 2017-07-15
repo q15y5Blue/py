@@ -11,11 +11,12 @@ from WebCrawDemo.entity.news import News
 class Parser(object):
     
     #根据url获取news对象的回复
+    #http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/CP5TJASH0001875P/comments/newList?offset=%s&limit=30&headLimit=1&tailLimit=2&ibc=newspc&_=1499993966.807994
     def _getNewsDetails(self,url):
         if url is  None :
             return
-    
-    
+        
+        
     #根据url解析news对象
     def _getNewsByHTML(self,html_doc,url):  
         soup=BeautifulSoup(html_doc,"html.parser")   #response 解析
@@ -89,5 +90,3 @@ class Parser(object):
         return self._getNewsDetails(url)
     
         
-t=Parser()
-t.test()
