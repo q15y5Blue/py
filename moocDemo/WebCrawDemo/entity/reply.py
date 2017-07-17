@@ -3,9 +3,9 @@ Created on 2017年7月13日
 
 @author: q15y5Blue
 '''
-from _datetime import datetime
+from datetime import datetime
 
-class reply(object):
+class Reply(object):
     
     @property
     def reply_ids(self):
@@ -53,7 +53,7 @@ class reply(object):
     
     @commentId.setter
     def commentId(self,value):
-        if not isinstance(value, str):
+        if not isinstance(value, int):
             raise ValueError("not str")
         self._commentId=value
         
@@ -73,7 +73,7 @@ class reply(object):
     
     @creatTime.setter
     def creatTime(self,value):
-        if not isinstance(value, datetime):
+        if not isinstance(value, str):
             raise ValueError("not datetime type!~")
         self._creatTime=value
         

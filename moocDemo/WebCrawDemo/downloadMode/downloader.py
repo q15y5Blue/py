@@ -8,7 +8,7 @@ class Downloader(object):
         request.add_header("user-agent", "Mozilla/5.0")
         response=urllib2.urlopen(request)
         if(response.getcode()==200):
-            return response.read().decode("gbk")
+            return response.read().decode('gbk')
         else :
             return None
 #http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/CP8865JC0001875P/comments/newList?offset=30&limit=30&headLimit=1&tailLimit=2&ibc=newspc&_=1499994675.72012
@@ -20,3 +20,6 @@ class Downloader(object):
             return response.read()
         else :
             return None
+# url = """http://news.163.com/17/0710/01/COUQE2BR000187VI.html"""
+# obj=Downloader()
+# print(obj.downloadHTML(url))
