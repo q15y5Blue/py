@@ -42,6 +42,7 @@ class Parser(object):
             reply.vote=ft['comments'][itsCommentsId]['vote']
             listReply.add(reply)
         
+        #test
         for lt in listReply:
             print(lt.content)
         """……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………"""
@@ -52,7 +53,8 @@ class Parser(object):
         news=News()
         
         #title get  
-        news.title=soup.h1.string
+        if(soup.h1.string is not None):
+            news.title=soup.h1.string
         
         #content get
         listAllPage=soup.find_all('p')
@@ -106,7 +108,7 @@ class Parser(object):
     
 def test():
     t=Parser()
-    url="""http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/CP5TJASH0001875P/comments/newList?offset=%s&limit=30&headLimit=1&tailLimit=2&ibc=newspc&_=1499993966.807994"""
+    url="""http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/CP5TJASH0001875P/comments/newList?offset=%s&limit=30"""
     resp=urlopen(url).read()
     soup=BeautifulSoup(resp,"html.parser")
     t.parseDetails(soup.__str__(), url)
