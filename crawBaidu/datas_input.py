@@ -3,7 +3,7 @@ import MySQLdb
 import json
 
 def get_connect():
-    db_connect = MySQLdb.connect("localhost", "root", "qiuyu", "qiuyu", charset="utf8")
+    db_connect = MySQLdb.connect("localhost", "root", "qiuyu", "qiuyu", charset="utf8mb4")
     return db_connect
 
 def update_info(connect,sql):
