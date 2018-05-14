@@ -56,23 +56,22 @@ def import_date(list):
     # cursor = connect.cursor()
     for lis in list:
         for li in lis:
-            print(li.name,li.content,li.tall,li.time,li.page)
-            sql = "insert into infos(name,content,tall,time,page) values ('%s','%s','%s','%s','%s')" %(li.name,li.content,li.tall,li.time,li.page)
-            print(sql)
-            din.update_info(connect,sql)
+            # print(li.name,li.content,li.tall,li.time,li.page)
+            sql = "insert into infos(name,content,tall,time,page) values ('%s','%s','%s','%s','%s')" % (li.name,li.content,li.tall,li.time,li.page)
+            din.update_info(connect, sql)
     connect.close()
 
 if __name__ == "__main__":
     list = []
-    for p in range(1, 22):
+    for p in range(1, 52):
         print(p)
         url = "https://tieba.baidu.com/p/5692349178?pn=%s" %( p )
         html_datas = get_content(url)
+        # time.sleep(10)
         if html_datas is not None:
-            # time.sleep(101)
             lis  = parseData(html_datas, p)
             list.append(lis)
-            print(list)
+            # print(list)
     import_date(list)
     # li= result()
     # sql = "insert into infos('name','content','tall','time','page') values (%s,%s,%s,%s,%s)" % (li.name, li.content, li.tall, li.time, li.page)
