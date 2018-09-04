@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import requests
-import datetime
-from .constant import req_header,constant,url_login
+import sys,os
+import time
+from .constant import req_header, constant, url_login, cookie
 
 
 class BaseAction(object):
@@ -11,8 +12,34 @@ class BaseAction(object):
     def prepareSession(self):
         self.session = requests.Session()
         self.session.headers.update(req_header)
-        self.getUrl = url_login
+        self.getUrl(url_login)
+        self.session.cookies.update()
+        self.getAuthStatus()
 
+    def getAuthStatus(self):
+        result = self.getUrl()
+
+    def getUrl(self, url, data=None, referer=None, origin=None):
+        referer and self.session.headers.update({'Referer': referer})
+        origin and self.session.headers.update({'Origin': origin})
+        timeout = 30 if url != 'https://d1.web2.qq.com/channel/poll2' else 120  # 这里url已经不存在了
+        try:
+            if data is None:
+                return self.session.get(url,timeout=timeout)
+            else:
+                return self.session.get(url,data = data, timeout=timeout)
+        except (requests.exceptions.SSLError, AttributeError):
+            if self.session.verify:
+                time.sleep(5)
+                print("无法和腾讯服务器建立连接,5秒后将使用非私密连接和腾讯服务器建立连接")
+                try:
+                    time.sleep(5)
+                except KeyboardInterrupt:
+                    sys.exit(0)
+                self.session.verify=False
+                return self.getUrl(url, data, referer, origin)
+            else:
+                raise
 
 #first
 def first_step():
