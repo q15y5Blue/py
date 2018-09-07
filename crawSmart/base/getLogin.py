@@ -9,34 +9,42 @@ from crawSmart.base.constant import req_header, constant, url_login, cookie
 
 
 class BaseAction(object):
-    def loginAction(self):
+    def loginAction(self,conf):
         self.prepareSession()
+        self.waitForAuth(conf)
 
     def prepareSession(self):
         self.session = requests.Session()
         self.session.headers.update(req_header)
         self.session.cookies.update(cookie)
         self.getUrl(url_login)#第一个url
-        print(self.getAuthStatus())
+        self.getAuthStatus()
+        self.session.cookies.pop("qrsig")
 
 
+    # 检测二维码扫描状态的
     def getAuthStatus(self):
         qrsig = bknHash(self.session.cookies['qrsig'], init_str=0)
+        print(qrsig)
         random = repr(ra.random() * 900000 + 1000000)
-        url_login = "https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&"\
+        url = "https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&"\
                   "ptqrtoken="+str(qrsig)+\
                   "&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-"+random+"&js_ver=10278&js_type=1&"\
-                  "login_sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&"\
+                  "sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&"\
                   "pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&"
-        referer = (url_login)
-        result = self.getUrl(url_login).content
-        return result.decode("utf8")
+        referer = (url_login)# 1347769.2213467043
+        print(url_login)
+        result = self.getUrl(url_login, referer=referer).content.decode("utf8")
+        print(result)
+        # ptuiCB('65','0','','0','二维码已失效。(988817572)', '')
+        # 65:过期    0:扫描成功    67:二维码已经扫描,等待确认        第一个参数是状态 第三个参数是跳转的连接
+        return result
 
     #
     def getUrl(self, url, data=None, referer=None, origin=None):
         referer and self.session.headers.update({'Referer': referer})
         origin and self.session.headers.update({'Origin': origin})
-        timeout = 30 if url != 'https://d1.web2.qq.com/channel/poll2' else 120  # 这里url已经不存在了######################question1111
+        timeout = 30 if url != 'http://w.qq.com/' else 120  # 这里url已经不存在了######################question1111
 
         try:
             if data is None:
@@ -46,7 +54,7 @@ class BaseAction(object):
         except (requests.exceptions.SSLError, AttributeError):
             if self.session.verify:
                 time.sleep(5)
-                print("无法和腾讯服务器建立连接,5秒后将使用非私密连接和腾讯服务器建立连接")# System.out.println("yy");
+                print("无法和腾讯服务器建立连接,5秒后将使用非私密连接和腾讯服务器建立连接") # System.out.println("yy");
                 try:
                     time.sleep(5)
                 except KeyboardInterrupt:
@@ -56,6 +64,11 @@ class BaseAction(object):
             else:
                 raise
 
+# QrcodeManager
+    def waitForAuth(self, conf):
+        pass
+
+
 #first
 def first_step():
     rul_img_show = """https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=2&l=M&s=3&d=72&v=4&t=0.686312473063923&daid=164&pt_3rd_aid=0
@@ -63,7 +76,7 @@ def first_step():
      # url_login = """https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&
             #    ptqrtoken=409413263
             #    &ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-1536038493274&js_ver=10278&js_type=1&
-            #    login_sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&
+            #    sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&
             #    pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&
             #    """
 
@@ -105,8 +118,8 @@ def qHash(x, K):
 
     return V1
 
-# this is a problems this is a picture linear function
+
 if __name__ == "__main__":
     ba = BaseAction()
-    print(ba.loginAction())
+    ba.loginAction(conf="conf")
     # print(url)
