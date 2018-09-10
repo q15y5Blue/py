@@ -11,30 +11,25 @@ from crawSmart.base.constant import req_header, constant, url_login, cookie
 class BaseAction(object):
     def loginAction(self,conf):
         self.prepareSession()
-        self.waitForAuth(conf)
+        # self.waitForAuth(conf)
 
     def prepareSession(self):
         self.session = requests.Session()
         self.session.headers.update(req_header)
         self.session.cookies.update(cookie)
         self.getUrl(url_login)#第一个url
-        self.getAuthStatus()
+        self.getQRCodeStatus()
         self.session.cookies.pop("qrsig")
 
 
-    # 检测二维码扫描状态的
-    def getAuthStatus(self):
+    # 获取二维码状态的 getAuthStatus
+    def getQRCodeStatus(self):
         qrsig = bknHash(self.session.cookies['qrsig'], init_str=0)
-        print(qrsig)
         random = repr(ra.random() * 900000 + 1000000)
-        url = "https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&"\
-                  "ptqrtoken="+str(qrsig)+\
-                  "&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-"+random+"&js_ver=10278&js_type=1&"\
-                  "sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&"\
-                  "pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&"
+        url = "https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&ptqrtoken="+str(qrsig)+"&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-"+random+"&js_ver=10278&js_type=1&sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&"
         referer = (url_login)# 1347769.2213467043
-        print(url_login)
-        result = self.getUrl(url_login, referer=referer).content.decode("utf8")
+        print(url)
+        result = self.getUrl(url, referer=referer).content.decode("utf8")
         print(result)
         # ptuiCB('65','0','','0','二维码已失效。(988817572)', '')
         # 65:过期    0:扫描成功    67:二维码已经扫描,等待确认        第一个参数是状态 第三个参数是跳转的连接
@@ -54,7 +49,7 @@ class BaseAction(object):
         except (requests.exceptions.SSLError, AttributeError):
             if self.session.verify:
                 time.sleep(5)
-                print("无法和腾讯服务器建立连接,5秒后将使用非私密连接和腾讯服务器建立连接") # System.out.println("yy");
+                print("无法和腾讯服务器建立连接,5秒后将使用非私密连接和腾讯服务器建立连接")
                 try:
                     time.sleep(5)
                 except KeyboardInterrupt:
@@ -64,30 +59,36 @@ class BaseAction(object):
             else:
                 raise
 
+    # 获取登录二维码
+    def getQRCodeImg(self):
+        url = "https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=2&l=M&s=3&d=72&v=4&t=" \
+                       +repr(ra.random())+ \
+                       "&daid=164&pt_3rd_aid=0"
+        qrcode = self.getUrl(url).content
+        with open("../img/qrCode.png", 'wb') as f:
+            f.write(qrcode)
+
 # QrcodeManager
-    def waitForAuth(self, conf):
-        pass
-
-
-#first
-def first_step():
-    rul_img_show = """https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=2&l=M&s=3&d=72&v=4&t=0.686312473063923&daid=164&pt_3rd_aid=0
-    """
-     # url_login = """https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&
-            #    ptqrtoken=409413263
-            #    &ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-1536038493274&js_ver=10278&js_type=1&
-            #    sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&
-            #    pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&
-            #    """
-
-# 获取登录二维码
-def get_url_img(url):
-    r = requests.get(url, headers=req_header)
-    results = r.content
-    filename = url.split('/')[-1]+".png"
-    with open(filename, 'wb') as f:
-        f.write(results)
-
+    def waitForAuth(self, conf):# getQrcode
+        qrStatus = self.getQRCodeStatus()
+        x ,y =1,1
+        if '二维码未失效' in qrStatus:
+            if x:
+                print('等待二维码扫描及授权...')
+                x = 0
+        elif '二维码认证中' in qrStatus:
+            if y:
+                print('二维码已扫描，等待授权...')
+                y = 0
+        elif '二维码已失效' in qrStatus:
+            print('二维码已失效, 重新获取二维码')
+            # qrcodeManager.Show(self.getQrcode())
+            x, y = 1, 1
+        elif '登录成功' in qrStatus:
+            print('已获授权')
+        else:
+            print('获取二维码扫描状态时出错, html="%s"', qrStatus)
+            sys.exit(1)
 
 def bknHash(skey, init_str=5381):
     hash_str = init_str
@@ -121,5 +122,5 @@ def qHash(x, K):
 
 if __name__ == "__main__":
     ba = BaseAction()
-    ba.loginAction(conf="conf")
-    # print(url)
+    ba.loginAction(conf="")
+    ba.getQRCodeImg()
