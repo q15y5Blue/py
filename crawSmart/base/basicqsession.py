@@ -442,3 +442,4 @@ def bknHash(skey, init_str=5381):
         hash_str += (hash_str << 5) + ord(i)
     hash_str = int(hash_str & 2147483647)
     return hash_str
+

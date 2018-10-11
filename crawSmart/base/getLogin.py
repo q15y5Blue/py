@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-import random as ra
+import random
 import requests
 import sys, os
 import time
-
-
-from crawSmart.base.constant import req_header, constant, url_login, cookie
+from crawSmart.base import log
+from crawSmart.base.constant import req_header, url_login, cookie
 
 
 class BaseAction(object):
     def loginAction(self,conf):
         self.prepareSession()
-        # self.waitForAuth(conf)
+        self.waitForAuth(conf)
 
     def prepareSession(self):
         self.session = requests.Session()
@@ -19,18 +18,17 @@ class BaseAction(object):
         self.session.cookies.update(cookie)
         self.getUrl(url_login)#第一个url
         self.getQRCodeStatus()
-        self.session.cookies.pop("qrsig")
+        # self.session.cookies.pop("qrsig")
 
 
     # 获取二维码状态的 getAuthStatus
     def getQRCodeStatus(self):
-        qrsig = bknHash(self.session.cookies['qrsig'], init_str=0)
-        random = repr(ra.random() * 900000 + 1000000)
-        url = "https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&ptqrtoken="+str(qrsig)+"&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-"+random+"&js_ver=10278&js_type=1&sig=yKVGvBluB6ZEisSjYwuyL0w2fumpc7hdStnIonePXiJGMWKretRujSj0N9Qb-Fi-&pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&"
-        referer = (url_login)# 1347769.2213467043
-        print(url)
+        qrsig = str(bknHash(self.session.cookies['qrsig'], init_str=0))
+        url ="https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fweb2.qq.com%2Fproxy.html&ptqrtoken="+qrsig+"&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&" \
+            "action=0-0-"+repr(random.random() * 900000 + 1000000)+"&js_ver=10282&js_type=1&login_sig=SAfRAEE2YNI5GVLErMLUfSbg-tMfbZjGaVugh*VmdmF36QFkkxSFjsBGMwibqYAJ&pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&"
+        referer = (url_login)
         result = self.getUrl(url, referer=referer).content.decode("utf8")
-        print(result)
+        log.info(result)
         # ptuiCB('65','0','','0','二维码已失效。(988817572)', '')
         # 65:过期    0:扫描成功    67:二维码已经扫描,等待确认        第一个参数是状态 第三个参数是跳转的连接
         return result
@@ -61,12 +59,14 @@ class BaseAction(object):
 
     # 获取登录二维码
     def getQRCodeImg(self):
-        url = "https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=2&l=M&s=3&d=72&v=4&t=" \
-                       +repr(ra.random())+ \
+        url = 'https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=2&l=M&s=3&d=72&v=4&t='\
+                        +repr(random.random())+\
                        "&daid=164&pt_3rd_aid=0"
+        print("qrCodeUrl:"+url)
         qrcode = self.getUrl(url).content
         with open("../img/qrCode.png", 'wb') as f:
             f.write(qrcode)
+        return qrcode
 
 # QrcodeManager
     def waitForAuth(self, conf):# getQrcode
@@ -123,4 +123,6 @@ def qHash(x, K):
 if __name__ == "__main__":
     ba = BaseAction()
     ba.loginAction(conf="")
-    ba.getQRCodeImg()
+    # ba.getQRCodeImg()
+    # 1537345958489
+    # print(repr(random.random() * 100000000000000 ))

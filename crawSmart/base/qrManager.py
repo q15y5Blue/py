@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# 二维码管理器
+# 二维码管理器 PIL &
 import uuid #（Universally Unique Identifier)
 import wcwidth
-import sys,platform
+import sys, platform
 from PIL import Image as img
 
 
@@ -16,11 +16,12 @@ class QrcodeManager(object):
             file = f.read()
         return file
 
-    def showImgText(self):
+    def showImgAsText(self):
         size = 33
         padding = 1
-        rgb = img.open(self.qrcodePath).resize((size,size)).convert('RGB')
-        qrtext = '0' *(size+padding*2) +'\n'
+        rgb = img.open(self.qrcodePath).resize((size, size)).convert('RGB')
+
+        qrtext = '0' * (size + padding * 2) + '\n'
         for rr in range(size):
             qrtext += '0' * padding
             for cc in range(size):
@@ -32,16 +33,18 @@ class QrcodeManager(object):
             qrtext += '0' * padding
             qrtext += '\n'
         qrtext = qrtext + '0' * (size + padding * 2) + '\n'
+
         try:
             b = u'\u2588'
             sys.stdout.write(b + '\r')
             sys.stdout.flush()
         except UnicodeEncodeError:
-            white = '■■'
+            white = 'MM'
         else:
             white = b
 
         black = '  '
+
         # currently for Windows, '\u2588' is not correct. So use 'MM' for windows.
         osName = platform.system()
         if osName == 'Windows':

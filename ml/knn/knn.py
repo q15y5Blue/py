@@ -26,22 +26,26 @@ def classify(inX, dataSet, lables, k):
 
 
 def file2matrix(filename):
-    fr = open(filename)
-    arrayOfLines = fr.readlines()
-    numberOfLines = len(arrayOfLines)
-    returnMat = zeros((numberOfLines,3))
+    file = open(filename)
+    dataList = file.readlines()
+    lineNumber = len(dataList)
+    returnMat = zeros((lineNumber, 3))
+    print(returnMat)
     classLabelVector = []
     index = 0
-    for line in arrayOfLines:
+    for line in dataList:
         line = line.strip()
         listFromLine = line.strip("\t")
         returnMat[index,:] = listFromLine[0:3]
+        print(returnMat)
         classLabelVector.append(int(listFromLine[-1]))
-        index +=1
-    return returnMat,classLabelVector
+        index =index + 1
+    return returnMat, classLabelVector
 
 
 if __name__ == "__main__":
-    group, lables= createDataSet()
-    result = classify([0.0, 0.0],group, lables, 3)
-    print(result)
+    filename = "./data/datingTestSet.txt"
+    # group, lables= createDataSet()
+    # result = classify([0.0, 0.0],group, lables, 3)
+    # print(result)
+    print(file2matrix(filename))
