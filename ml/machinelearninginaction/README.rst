@@ -1,4 +1,4 @@
-Machine Learning in Action 
+这是书上的案例，每完成一部分会删掉相应的章节源码 
 ==========================
 
 This is the source code to go with "Machine Learning in Action" 
