@@ -26,8 +26,8 @@ def getVecsLabels(path):
                 continue
             else:
                 vec = img2Vec(pa)
-            imgVecs = np.vstack((imgVecs, vec))
-            labelList.append(int(li))
+                imgVecs = np.vstack((imgVecs, vec))
+                labelList.append(int(li))
     return imgVecs, labelList
 
 def testVecs(dataPath, testPath):
