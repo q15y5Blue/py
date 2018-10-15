@@ -12,10 +12,12 @@ def createDataSet():
     labels = ['A', 'A', 'B', 'B']
     return group, labels
 
-
+# inX，待测试数据，DataSet，数据集，Labels 已知的标签，k
 def classify(inX, dataSet, lables, k):
     dataSetSize = dataSet.shape[0]
-    diffMat = tile(inX, (dataSetSize, 1)) - dataSet   # tile 将数组inX 重复N次
+    # print((dataSetSize, 1))
+    # print(tile(inX, (dataSetSize, 1)))
+    diffMat = tile(inX, (dataSetSize, 1)) - dataSet   # tile 将数组inX 重复(x,1)次 变成x行一列的向量
     sqDiffMat = diffMat**2
     sqDistances = sqDiffMat.sum(axis=1) # 矩阵行向量相加  axis＝0表示按列相加
     distances = sqDistances**0.5
@@ -24,10 +26,10 @@ def classify(inX, dataSet, lables, k):
     for i in range(k):
         voteIlable = lables[sortedDistIndicies[i]]
         classCount[voteIlable] = classCount.get(voteIlable, 0)+1
-    sortedClassCount = sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+    sortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
     return sortedClassCount[0][0]
 
-
+# 输入文件 返回数据向量和 标签向量
 def file2matrix(filename):
     file = open(filename)
     dataList = file.readlines()
@@ -65,7 +67,47 @@ def showFigure1(datingDataMat, datingLables):
     plt.show()
 
 
+# 为了使数据归一化 newValue = (oldValue - min)/(max-min)
+def autoNorm(dataSet):
+    minValues  = dataSet.min(0)  # 获取每列最小的数字
+    maxValues = dataSet.max(0)  # a.min(1)返回的是a的每行最小值
+    ranges = maxValues - minValues
+    normDataSet = zeros(shape(dataSet))
+    dup = dataSet.shape[0]
+    normDataSet = dataSet - tile(minValues, (dup, 1))
+    normDataSet = normDataSet/tile(ranges, (dup, 1))
+    return normDataSet, ranges, minValues
+
+# 测试方法
+def datingClassTest(fileName):
+    hoRatio = 0.12 #测试集百分比
+    datingDataMat, datingLabes = file2matrix(fileName)  # 数据和标签
+    normMat, ranges, minValues = autoNorm(datingDataMat)  # 数据归一化
+    m = normMat.shape[0]
+    numTestVecs = int(m*hoRatio)  # 测试数量
+    errorCount  =0.0
+    for i in range(numTestVecs):
+        # 测试集  数据集 标签集 k
+        classifierResult = classify(normMat[i, :], normMat[numTestVecs:m, :], datingLabes[numTestVecs:m], 3)
+        if(classifierResult != datingLabes[i]):
+            errorCount+=1.0
+            print("分类器结果：%d实际结果:%d" % (classifierResult, datingLabes[i]))
+    print("错误率:%f"%(errorCount/float(numTestVecs)))
+
+
+# application of web
+def classifyPerson(dataFileName):
+    resultList = ['不喜欢', '有点喜欢', '很喜欢']
+    percentTats = float(input("玩视频游戏的时间百分比"))
+    ffMiles = float(input("每年飞行时间"))
+    iceCream = float(input("冰激凌熟练每年"))
+    datingDataMat ,dataLabels = file2matrix(dataFileName)
+    normMat,ranges, minValues = autoNorm(datingDataMat)
+    inputArray = array([ffMiles,percentTats,iceCream])
+    classifierResult = classify((inputArray-minValues)/ranges, normMat, dataLabels, 3)
+    print(resultList[classifierResult])
+
 if __name__ == "__main__":
     filename = "./data/datingTestSet.txt"
-    datingDataMat, datingLables = file2matrix(filename)
-    showFigure1(datingDataMat, datingLables)
+    # datingClassTest(filename)
+    classifyPerson(filename)
