@@ -80,7 +80,7 @@ def autoNorm(dataSet):
 
 # 测试方法
 def datingClassTest(fileName):
-    hoRatio = 0.12 #测试集百分比
+    hoRatio = 0.12  # 测试集百分比
     datingDataMat, datingLabes = file2matrix(fileName)  # 数据和标签
     normMat, ranges, minValues = autoNorm(datingDataMat)  # 数据归一化
     m = normMat.shape[0]
@@ -95,16 +95,15 @@ def datingClassTest(fileName):
     print("错误率:%f"%(errorCount/float(numTestVecs)))
 
 
-# application of web
 def classifyPerson(dataFileName):
     resultList = ['不喜欢', '有点喜欢', '很喜欢']
-    percentTats = float(input("玩视频游戏的时间百分比"))
+    percentTats  = float(input("玩视频游戏的时间百分比"))
     ffMiles = float(input("每年飞行时间"))
     iceCream = float(input("冰激凌熟练每年"))
     datingDataMat ,dataLabels = file2matrix(dataFileName)
     normMat,ranges, minValues = autoNorm(datingDataMat)
     inputArray = array([ffMiles,percentTats,iceCream])
-    classifierResult = classify((inputArray-minValues)/ranges, normMat, dataLabels, 3)
+    classifierResult = classify((inputArray-minValues)/ranges, normMat,dataLabels, 3)
     print(resultList[classifierResult])
 
 if __name__ == "__main__":
