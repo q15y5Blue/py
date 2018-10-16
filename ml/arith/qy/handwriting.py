@@ -5,7 +5,7 @@ from ml.arith.qy.knn import classify
 
 # reshape改变维度
 # ravel 多维变一维
-# flatten 同revel 不过flatten函数会请求分配内存来保存结果，而ravel函数只是返回数组的一个视图(view)
+# flatten 同revel不过flatten函数会请求分配内存来保存结果，而ravel函数只是返回数组的一个视图(view)
 def img2Vec(filename):
     fileVec = img.imread(filename)
     reVec = fileVec.reshape((1, 784))
