@@ -23,6 +23,7 @@ def getVecsLabels(path):
             if (imgVecs == zeros((1, 784))).all():
                 imgVecs = img2Vec(pa)
                 labelList.append(int(li))
+                # print(imgVecs)
                 continue
             else:
                 vec = img2Vec(pa)
@@ -30,15 +31,20 @@ def getVecsLabels(path):
                 labelList.append(int(li))
     return imgVecs, labelList
 
+
 def testVecs(dataPath, testPath):
     fileNames = listdir(testPath)
     dataSet,labelList = getVecsLabels(dataPath)
+    print(dataSet.shape)
+    print(len(labelList))
+    # print(dataSet,labelList)
     for fileName in fileNames:
         filePath = testPath + fileName
         vec = img2Vec(filePath)
         result = classify(vec, dataSet, labelList, 3)
         print(result, "文件目录"+filePath)
 
-if __name__=="__main__":
+
+if __name__== "__main__":
     print(testVecs("./data/training/", "./data/test/"))
 
