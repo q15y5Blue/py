@@ -31,23 +31,27 @@ def calEntropy(dataSet):
 # dataSet数据集  axis划分数据集的特征   value特征的返回值
 def splitDataSet(dataSet, index, value):
     retData = []
-    # [1, 0, 'no'], [0, 1, 'no'], [0, 1, 'no']
     for featVec in dataSet:
         if featVec[index] == value:
             reducedFeatVec = featVec[:index]
             reducedFeatVec.extend(featVec[index+1:])
             retData.append(reducedFeatVec)
+
+
     return retData
 
-# 选择最好的数据集划分方法
+
+# 选择最好的数据集划分方法 计算 信息增益
+# 对所有唯一的特征值得到的熵求和,
+# 信息增益  是熵的减少或者数据无序度的减少            将信息增益数值最大的特征作为决策树的根节点
 def chooseBestFeatureToSplit(dataSet):
     numberFreature = len(dataSet[0])-1  # 特征数2
-    baseEntropy = calEntropy(dataSet)
+    baseEntropy = calEntropy(dataSet)   # 计算整个数据集的原始香农熵
     bestInfoGain = 0.0;
     bestFeature = -1;
     for i in range(numberFreature):
-        featList = [example[i] for example in dataSet]
-        uniqueVals = set(featList)# 特征去重
+        featureList = [example[i] for example in dataSet]
+        uniqueVals = set(featureList)  # 特征去重
         newEntropy = 0.0
         for value in uniqueVals:
             subDataSet = splitDataSet(dataSet, i, value)
@@ -59,9 +63,12 @@ def chooseBestFeatureToSplit(dataSet):
             bestFeature = i
     return bestFeature
 
-def majorityCnt(classList):
+# 因为算法运行时并不是每次划分分组时都会消耗特征,(特征数并不是在每次互粉数据分组的时候都减少)
+# 多数表决 法 决定叶子结点的分类
+# me:返回出现频率最多的标签
+def majorityCnt(labelList):
     classCount = {}
-    for vote in classList:
+    for vote in labelList:
         if vote not in classCount.keys():
             classCount[vote]=0
         classCount[vote] +=1
@@ -71,21 +78,79 @@ def majorityCnt(classList):
 
 def createTree(dataSet, labels):
     labelList = [ex[-1] for ex in dataSet]
-    if labelList.count(labelList[0]) == len(labelList):
+    if labelList.count(labelList[0]) == len(labelList):   # 标签如果完全相同则停止继续划分
         return labelList[0]
-    if len(dataSet[0]) == 1:
+    if len(dataSet[0]) == 1:                            # 遍历完所有特征时返回出现次数最多的
         return majorityCnt(labelList)
-    bestFeat = chooseBestFeatureToSplit(dataSet)
-    bestFeatLabel = labels[bestFeat]
-    myTree = {bestFeatLabel:{}}
-    del(labels[bestFeat])
-    featValues = [ex[bestFeat] for ex in dataSet]
-    uniqueVals = set(featValues)
+    bestFeatureIndex = chooseBestFeatureToSplit(dataSet)
+    bestFeatureLabel = labels[bestFeatureIndex]
+    myTree = {bestFeatureLabel:{}}
+    del(labels[bestFeatureIndex])
+    featureValues = [ex[bestFeatureIndex] for ex in dataSet]
+    uniqueVals = set(featureValues)
     for va in uniqueVals:
         subLabels = labels[:]
-        myTree[bestFeatLabel][va] = createTree(splitDataSet(dataSet,bestFeat,va),subLabels)
+        myTree[bestFeatureLabel][va] = createTree(splitDataSet(dataSet, bestFeatureIndex, va), subLabels)
     return myTree
+
+# 为了绘制这个树,需要获取叶子结点的数目和树的层数
+def getNumerLeafs(myTree):
+    numerLeafs = 0
+    firstStr = list(myTree.keys())[0]
+    secondDict = myTree[firstStr]
+    for key in secondDict.keys():
+        if type(secondDict[key]).__name__ == "dict":
+            numerLeafs += getNumerLeafs(secondDict[key])
+        else:
+            numerLeafs +=1
+    return numerLeafs
+
+# 获取树的深度
+def getTreeDepth(myTree):
+    numberDepth = 0
+    firstKey = list(myTree.keys())[0]
+    secondDict = myTree[firstKey]
+    for key in secondDict.keys():
+        if type(secondDict[key]).__name__=='dict':
+            numberDepth = 1 + getTreeDepth(secondDict[key])
+        else:
+            numberDepth = 1
+    return numberDepth
 
 
 if __name__ == "__main__":
     dataSet, labels = createDataSet()
+    myTree = createTree(dataSet, labels)
+    print(myTree)
+    print(getTreeDepth(myTree))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
