@@ -117,6 +117,30 @@ def getTreeDepth(myTree):
             numberDepth = 1
     return numberDepth
 
+# 决策树分类器,参数 :决策树 标签向量 测试向量
+def classify(inputTree, featureLabels, testVec):
+    firstStr = inputTree.keys()[0]
+    secondDict = inputTree[firstStr]
+    featureIndex = featureLabels.index(firstStr)
+    for key in secondDict.keys():
+        if testVec[featureIndex] == key:
+            if type(secondDict[key]).__name__== 'dict':
+                classLabel = classify(secondDict[key], featureLabels, testVec)
+            else:
+                classLabel = secondDict[key]
+    return classLabel
+
+# pickle序列化决策树:
+def storeTree(inputTree, fileName):
+    import pickle
+    fw = open(fileName)
+    pickle.dump(inputTree,fw)
+    fw.close()
+
+def grabTree(fileName):
+    import pickle
+    fr = open(fileName)
+    return pickle.load(fr)
 
 if __name__ == "__main__":
     dataSet, labels = createDataSet()
