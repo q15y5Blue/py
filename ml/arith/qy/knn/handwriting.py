@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # k-NN手写体项目
 from ml.arith.qy import *
-from ml.arith.qy.knn import classify
+from ml.arith.qy.knn.knn import classify
 
 # reshape改变维度
 # ravel 多维变一维
