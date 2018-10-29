@@ -2,6 +2,7 @@
 # request基础
 import requests
 from crawBaidu import headers as heads
+import requests.exceptions as exc
 from crawBaidu.craw_proxy import *
 
 class BaseSession(object):
@@ -17,13 +18,26 @@ class BaseSession(object):
         Referer and self.session.headers.update({'Referer':Referer})
         Origin and self.session.headers.update({'Origin':Origin})
         proxies and self.session.proxies.update(proxies.prox)
-        timeout = 10
+        timeout = 800
+        flag = False
         try:
             return self.session.get(url, timeout=timeout, proxies=proxies.prox)
-        except requests.exceptions.ProxyError or requests.exceptions.ConnectTimeout or requests.exceptions.ConnectionError:
-            print("这个代理有问题,可以尝试下一个")
+        except exc.ProxyError:
+            flag = True
+        except exc.ConnectTimeout:
+            flag = True
+        except exc.ConnectionError:
+            flag = True
+        except exc.ReadTimeout:
+            flag = True
+        if flag and proxies is not None:
+            print("当前代理", proxies ,"不可用,1s后尝试使用其他代理连接,此代理将会被删除.")
+            proxies.deleteProxy()
+            time.sleep(1)
+            # 这里碰到的小问题,如果直接调用self.reqGet方法,在上层调用reqGet会为空
+            return self.reqGet(url, proxies=NetProtocol())
 
 
-# if __name__=="__main__":
-#     ba = BaseSession()
-#     print(ba.reqGet("http://www.runoob.com"))
+if __name__=="__main__":
+    ba = BaseSession()
+    re = ba.reqGet(url="http://icanhazip.com/", proxies=NetProtocol())

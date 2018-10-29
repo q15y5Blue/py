@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 # decision Tree
 # 决策树 适合用于离散型数据 1,判定数据集的无序程度(信息熵) 2,划分数据集
 # 信息熵 entropy : 信息的期望值       平均信息量, 度量集合无序程度的方法
 # entropy越高,则混合的数据也就越多,
 # 方法二: 基尼不纯度(Gini impurity)
 from ml.arith.qy import *
+from ml.arith.qy.dtree.drawTree import *
 
 def createDataSet():
     dataSet = [[1, 1, 'maybe'], [1, 1, 'yes'], [1, 1, 'yes'], [1, 0, 'no'], [0, 1, 'no'], [0, 1, 'no']]
@@ -142,12 +144,21 @@ def grabTree(fileName):
     fr = open(fileName)
     return pickle.load(fr)
 
-if __name__ == "__main__":
-    dataSet, labels = createDataSet()
-    myTree = createTree(dataSet, labels)
-    print(myTree)
-    print(getTreeDepth(myTree))
 
+def lensesTest():
+    fr = open("../data/lenses.txt")
+    lenses = [inst.strip().split('\t') for inst in fr.readlines()]
+    lensesLables = ['age', 'prescript', 'astigmatic', 'tearRate']
+    lensesTree = createTree(lenses, lensesLables)
+    createPlot(lensesTree)
+    print(lenses)
+
+if __name__ == "__main__":
+    # dataSet, labels = createDataSet()
+    # myTree = createTree(dataSet, labels)
+    # print(myTree)
+    # print(getTreeDepth(myTree))
+    lensesTest()
 
 
 

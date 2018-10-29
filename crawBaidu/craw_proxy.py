@@ -1,14 +1,15 @@
 # coding:utf-8
 from crawBaidu.headers import headers
 from crawBaidu.conection import *
-import crawBaidu.db as din
+from crawBaidu.db import DBConnect
 from bs4 import BeautifulSoup
 import requests
+import requests.exceptions as exc
 import re
 import time
 
 
-class NetProtocol():
+class NetProtocol(object):
     def __init__(self):
         self.location = ''
         self.port = ''
@@ -20,19 +21,17 @@ class NetProtocol():
         return self.location + ":"+ self.port
 
     def getIp(self):
-        connect = din.get_connect()
+        cnt = DBConnect()
         sql = "select location,port from proxy order by rand()"
-        data = din.get_date(connect, sql)
-        connect.close()
+        data = cnt.get_date(sql)
         self.location = data[0]
         self.port = data[1]
         self.ip = self.__str__()
 
     def getProxies(self):
-        connect = din.get_connect()
+        cnt = DBConnect()
         sql = "select location,port from proxy "
-        data = din.get_allData(connect, sql)
-        connect.close()
+        data = cnt.get_allData(sql)
         list = []
         for dat in data:
             list.append(dat[0] + ':' + dat[1])
@@ -65,15 +64,10 @@ class NetProtocol():
     def testProxy(self):
         url = "http://icanhazip.com/"
         print("正在尝试使用代理连接", self.prox)
-        baseSession = BaseSession()
-        try:
-            req = baseSession.reqGet(url, proxies=self)
-            print(req.text)
-        except requests.exceptions.ProxyError or requests.exceptions.ConnectTimeout or requests.exceptions.ConnectionError:
-            print("连接失败,等待1秒后再次尝试")
-            time.sleep(1)
-            ct = NetProtocol()
-            baseSession.reqGet(url, proxies=ct)
+        bs = BaseSession()
+        req  = bs.reqGet(url, proxies=self)
+        if req:
+            print("当前代理可用,代理IP是:",req.text)
 
     # 执行爬虫,并将代理存到数据库中
     def pagingCraw(self):
@@ -84,13 +78,18 @@ class NetProtocol():
             import_date(list)
         # return list
 
+    def deleteProxy(self):
+        db = DBConnect()
+        db.update_info("delete from proxy where location='%s'"%(self.location))
+
+
 # 导入数据到proxy表里
 def import_date(list):
-    connect = din.get_connect()
+    cnt = DBConnect()
     for lis in list:
         sql = "insert into proxy(location,port) values ('%s','%s')" % (lis.location, lis.port)
-        din.update_info(connect, sql)
-    connect.close()
+        cnt.update_info(sql)
+
 
 
 if __name__ == '__main__':
