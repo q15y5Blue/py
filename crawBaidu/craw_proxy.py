@@ -10,16 +10,21 @@ import time
 
 
 class NetProtocol(object):
-    def __init__(self):
-        self.location = ''
-        self.port = ''
-        self.ip = ''
-        self.getIp()
-        self.prox =  {'http': self.ip, 'https': self.ip}
+    def __init__(self, location=None, port=None):
+        self.location = location
+        self.port = port
+        self.ip = self.__str__()
+        self.prox = {'http': self.ip, 'https': self.ip}
+        if self.location == None and self.port==None:
+            self.getIp()
 
     def __str__(self):
-        return self.location + ":"+ self.port
+        if self.location ==None and self.port ==None:
+            return ""
+        else :
+            return self.location + ":"+ self.port
 
+    # 初始化ip
     def getIp(self):
         cnt = DBConnect()
         sql = "select location,port from proxy order by rand()"
@@ -28,6 +33,7 @@ class NetProtocol(object):
         self.port = data[1]
         self.ip = self.__str__()
 
+    #获取所有proxies
     def getProxies(self):
         cnt = DBConnect()
         sql = "select location,port from proxy "
@@ -37,11 +43,15 @@ class NetProtocol(object):
             list.append(dat[0] + ':' + dat[1])
         return list
 
+    #获取某个
+    def getTheProxyes(self, cnt):
+        sql = "select location from proxy where location = '%s' " %(self.location)
+        data = cnt.get_date(sql)
+        return data
+
     # 获取每一个页的ipList http://www.66ip.cn/%s.html
-    def craw_ipList(self,url):
-        baseSession = BaseSession()
-        req =  baseSession.reqGet(url)
-        # req = requests.get(url)
+    def craw_ipList(self, url):
+        req = requests.get(url, timeout=120)
         req.encoding = "utf-8"
         soup = BeautifulSoup(req.text, "html.parser")
         table_li = soup.find_all("table", width="100%").__getitem__(0)
@@ -54,48 +64,47 @@ class NetProtocol(object):
             location_ip = exp_ip.search(strs)
             location_port = exp_port.search(strs)
             if type(location_ip).__name__ == "SRE_Match" and type(location_port).__name__ == "SRE_Match":
-                ip = NetProtocol()
-                ip.location = str(location_ip.group(0))
-                ip.port = str(location_port.group(0))
+                location = str(location_ip.group(0))
+                port = str(location_port.group(0))
+                ip = NetProtocol(location=location, port=port)
                 ipList.append(ip)
         return ipList
+
+    # 执行爬虫,并将代理存到数据库中
+    def pagingCraw(self):
+        list = []
+        for x in range(1, 35):
+            url = "http://www.66ip.cn/%s.html" % (x)
+            list.extend(self.craw_ipList(url))
+        # importData
+        cnt = DBConnect()
+        for lis in list:
+            if lis.testProxy():
+                sql = "insert into proxy(location,port) values ('%s','%s')" % (lis.location, lis.port)
+                if not lis.getTheProxyes(cnt):
+                    cnt.update_info(sql)
+        # return list
 
     # testProxy
     def testProxy(self):
         url = "http://icanhazip.com/"
         print("正在尝试使用代理连接", self.prox)
-        bs = BaseSession()
-        req  = bs.reqGet(url, proxies=self)
-        if req:
-            print("当前代理可用,代理IP是:",req.text)
-
-    # 执行爬虫,并将代理存到数据库中
-    def pagingCraw(self):
-        list = []
-        for x in range(1, 21):
-            url = "http://www.66ip.cn/%s.html" % (x)
-            list.extend(self.craw_ipList(url))
-            import_date(list)
-        # return list
+        try:
+            req = requests.get(url, proxies=self.prox)
+            if req.text.strip() == str(self.location).strip():
+                return True
+        except Exception:
+            return False
 
     def deleteProxy(self):
         db = DBConnect()
-        db.update_info("delete from proxy where location='%s'"%(self.location))
-
-
-# 导入数据到proxy表里
-def import_date(list):
-    cnt = DBConnect()
-    for lis in list:
-        sql = "insert into proxy(location,port) values ('%s','%s')" % (lis.location, lis.port)
-        cnt.update_info(sql)
+        if self.getTheProxyes() is not None:
+            db.update_info("delete from proxy where location='%s'"%(self.location))
 
 
 
 if __name__ == '__main__':
-    proxy = NetProtocol()
-    print(proxy.prox)
-    proxy.testProxy()
-    # pro =netProtocol()
-    # datas = pro.getProxies()
-    # testProxy(url,datas)
+    # pro = NetProtocol()
+    # pro.pagingCraw()
+    # pro.testProxy()
+    pass

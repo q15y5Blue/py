@@ -29,6 +29,7 @@ class DBConnect(object):
         cursor.close()
         return data
 
+
     def get_allData(self,sql):
         cursor = self.connect.cursor(buffered=True)
         cursor.execute(sql)
@@ -36,7 +37,7 @@ class DBConnect(object):
         cursor.close()
         return datas
 
-    def update_info(self,sql):
+    def update_info(self, sql):
         cursor = self.connect.cursor(buffered=True)
         cursor.execute(sql)
         try:
@@ -47,4 +48,4 @@ class DBConnect(object):
 
 # if __name__=='__main__':
 #     con = DBConnect()
-#     print(con.get_date('select location,port from proxy order by rand()'))
+#     print(con.get_date('', 'proxy','location', '217.146.209.25'))
