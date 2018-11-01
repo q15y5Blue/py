@@ -11,6 +11,7 @@ class DBConnect(object):
         'database':'qiuyu',
         'password':'qiuyu8691689',
         'host':'101.132.243.211',
+        'charset':'utf8mb4',
         'client_flags': [ClientFlag.SSL],
     }
 
@@ -47,5 +48,8 @@ class DBConnect(object):
 
 
 # if __name__=='__main__':
-#     con = DBConnect()
-#     print(con.get_date('', 'proxy','location', '217.146.209.25'))
+    # con = DBConnect()
+    # str = '😂'
+    # sql = "insert into test(test) values ('%s') " %(str)
+    # print(sql)
+    # con.update_info(sql)
