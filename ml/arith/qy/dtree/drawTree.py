@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ml.arith.qy.dtree.tree import *
+from ml.arith.qy import *
 
 # 绘图
 decisionNode = dict(boxstyle="sawtooth", fc="0.8")
