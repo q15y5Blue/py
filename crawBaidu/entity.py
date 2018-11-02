@@ -6,8 +6,11 @@ class reply(object):
         self.author=''
         self.date = ''
         self.floor_num = ''  # 楼层
-        self.fn = self.floor_num  # 父级 fn等于楼层本身，这是个主回复帖。
+        self.fn = ''  # 父级 fn等于楼层本身，这是个主回复帖。
+        self.child = []
 
+    def __str__(self):
+        return "id:"+str(self.id)+'author:'+self.author+'date:'+self.date+'floor_num:'+str(self.floor_num)+str(self.fn)
 
 class article(object):
     def __init__(self):
@@ -16,6 +19,7 @@ class article(object):
         self.content = ''
         self.username = ''
         self.date = ''
+        self.replyList = []
 
 
 class users(object):
