@@ -19,9 +19,9 @@ class NetProtocol(object):
             self.getIp()
 
     def __str__(self):
-        if self.location ==None and self.port ==None:
+        if self.location == None or self.port ==None:
             return ""
-        else :
+        else:
             return self.location + ":"+ self.port
 
     # 初始化ip
@@ -32,6 +32,7 @@ class NetProtocol(object):
         self.location = data[0]
         self.port = data[1]
         self.ip = self.__str__()
+        self.prox = {'http': self.ip, 'https': self.ip}
 
     #获取所有proxies
     def getProxies(self):
@@ -98,13 +99,12 @@ class NetProtocol(object):
 
     def deleteProxy(self):
         db = DBConnect()
-        if self.getTheProxyes() is not None:
+        if self.getTheProxyes(db) is not None:
             db.update_info("delete from proxy where location='%s'"%(self.location))
 
 
 
-# if __name__ == '__main__':
-    # pro = NetProtocol()
-    # pro.pagingCraw()
-    # pro.testProxy()
+if __name__ == '__main__':
+    pro = NetProtocol()
+    pro.pagingCraw()
     # pass
