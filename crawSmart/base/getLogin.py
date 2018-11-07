@@ -3,22 +3,28 @@ import random
 import requests
 import sys, os
 import time
+import json
 from crawSmart.base import log
 from crawSmart.base.constant import req_header, url_login, cookie
-
+from crawSmart.base.qrManager import QrcodeManager
 
 class BaseAction(object):
     def loginAction(self,conf):
         self.prepareSession()
         self.waitForAuth(conf)
+        # self.getPtwebqq()
+        self.getVFwebqq()
+        self.getUinandPsessionId()
 
     def prepareSession(self):
+        self.clientid = 53999199
+        self.psessionid = 1541574616852
         self.session = requests.Session()
         self.session.headers.update(req_header)
+        self.getUrl(url_login)#第一个ui
         self.session.cookies.update(cookie)
-        self.getUrl(url_login)#第一个url
         self.getQRCodeStatus()
-        # self.session.cookies.pop("qrsig")
+        self.session.cookies.pop("qrsig")
 
 
     # 获取二维码状态的 getAuthStatus
@@ -28,22 +34,19 @@ class BaseAction(object):
             "action=0-0-"+repr(random.random() * 900000 + 1000000)+"&js_ver=10282&js_type=1&login_sig=SAfRAEE2YNI5GVLErMLUfSbg-tMfbZjGaVugh*VmdmF36QFkkxSFjsBGMwibqYAJ&pt_uistyle=40&aid=501004106&daid=164&mibao_css=m_webqq&"
         referer = (url_login)
         result = self.getUrl(url, referer=referer).content.decode("utf8")
-        log.info(result)
-        # ptuiCB('65','0','','0','二维码已失效。(988817572)', '')
-        # 65:过期    0:扫描成功    67:二维码已经扫描,等待确认        第一个参数是状态 第三个参数是跳转的连接
         return result
+
 
     #
     def getUrl(self, url, data=None, referer=None, origin=None):
         referer and self.session.headers.update({'Referer': referer})
         origin and self.session.headers.update({'Origin': origin})
         timeout = 30 if url != 'http://w.qq.com/' else 120  # 这里url已经不存在了######################question1111
-
         try:
             if data is None:
                 return self.session.get(url, timeout=timeout)
             else:
-                return self.session.get(url, data=data, timeout=timeout)
+                return self.session.post(url, data=data, timeout=timeout)
         except (requests.exceptions.SSLError, AttributeError):
             if self.session.verify:
                 time.sleep(5)
@@ -62,33 +65,95 @@ class BaseAction(object):
         url = 'https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=2&l=M&s=3&d=72&v=4&t='\
                         +repr(random.random())+\
                        "&daid=164&pt_3rd_aid=0"
-        print("qrCodeUrl:"+url)
         qrcode = self.getUrl(url).content
         with open("../img/qrCode.png", 'wb') as f:
             f.write(qrcode)
-        return qrcode
+        # return qrcode
 
-# QrcodeManager
+    # 获取二维码扫描状态的
     def waitForAuth(self, conf):# getQrcode
-        qrStatus = self.getQRCodeStatus()
-        x ,y =1,1
-        if '二维码未失效' in qrStatus:
-            if x:
-                print('等待二维码扫描及授权...')
-                x = 0
-        elif '二维码认证中' in qrStatus:
-            if y:
-                print('二维码已扫描，等待授权...')
-                y = 0
-        elif '二维码已失效' in qrStatus:
-            print('二维码已失效, 重新获取二维码')
-            # qrcodeManager.Show(self.getQrcode())
+        self.getQRCodeImg()
+        qrcodeShow = QrcodeManager()
+        qrcodeShow.showImg()
+        try:
             x, y = 1, 1
-        elif '登录成功' in qrStatus:
-            print('已获授权')
-        else:
-            print('获取二维码扫描状态时出错, html="%s"', qrStatus)
-            sys.exit(1)
+            while True:
+                time.sleep(3)
+                qrStatus = self.getQRCodeStatus()
+                if '二维码未失效' in qrStatus:
+                    if x:
+                        log.info('等待二维码扫描及授权...')
+                        x = 0
+                elif '二维码认证中' in qrStatus:
+                    if y:
+                        print('二维码已扫描，等待授权...')
+                        y = 0
+                elif '二维码已失效' in qrStatus:
+                    log.warn('二维码已失效, 重新获取二维码')
+                    self.getQRCodeImg()
+                    qrcodeShow = QrcodeManager()
+                    qrcodeShow.showImg()
+                    x, y = 1, 1
+                elif '登录成功' in qrStatus:
+                    print(qrStatus)
+                    log.info('已获授权')
+                    items = qrStatus.split(',')
+                    self.nick = str(items[-1].split("'")[1])
+                    self.qq = str(int(self.session.cookies['superuin'][1:]))
+                    self.urlPtwebqq = items[2].strip().strip("'")
+                    t = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
+                    self.dbbasename = '%s-%s-contact.db'%(t, self.qq)
+                    break
+                else:
+                    log.error('获取二维码扫描状态时出错, html="%s"', qrStatus)
+                    sys.exit(1)
+        except Exception as e:
+            log.error(e)
+
+    def getVFwebqq(self):
+        self.getUrl(self.urlPtwebqq)# 获取登录成功的session
+        url = "https://s.web2.qq.com/api/getvfwebqq?ptwebqq=&clientid=%s&psessionid=&t=%s" \
+              %(self.clientid,repr(random.random()* 900000 + 1000000))
+        Referer = "https://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"
+        Origin = 'https://s.web2.qq.com'
+        try:
+            vfwebqq = self.smartRequest(url)['vfwebqq']
+            self.vfwebqq = vfwebqq
+            print(self.vfwebqq)
+            # self.vfwebqq = self.smartRequest(url)# 获取vfwebqq
+            log.info('已经获取vfwebqq')
+        except Exception as e:
+            print(e)
+
+    # 获取各种登录参数后真正的登录了
+    def getUinandPsessionId(self):
+        rData = {"ptwebqq": "", "clientid": self.clientid, "psessionid": "", "status": "online"}
+        thisData = {'r':rData}
+        # newData=json.dumps(thisData)
+        # print(thisData)
+        result = self.smartRequest(
+            url='https://d1.web2.qq.com/channel/login2',
+            data=thisData,
+            Referer="https://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2",
+            Origin="https://d1.web2.qq.com"
+        )
+        if result is not  None:
+            self.uin = result['uin']
+            self.psessionid = result['psessionid']
+            self.hash = qHash(self.uin, '')
+            self.bkn = bknHash(self.session.cookies['skey'])
+            log.info('已获取uin和psessionid')
+
+    # requests
+    def smartRequest(self, url, data=None, Referer=None, Origin=None):
+        resp = self.getUrl(url, data, Referer, Origin)
+        print(resp.content)
+        if resp.status_code == 200:
+            reJs = resp.json()
+            if reJs['retcode'] == 0:
+                return reJs['result']
+            else:
+                None
 
 def bknHash(skey, init_str=5381):
     hash_str = init_str
@@ -125,4 +190,3 @@ if __name__ == "__main__":
     ba.loginAction(conf="")
     # ba.getQRCodeImg()
     # 1537345958489
-    # print(repr(random.random() * 100000000000000 ))

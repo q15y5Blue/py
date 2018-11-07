@@ -29,13 +29,13 @@ def gradAscent(dataMatIn, classLabels):
     for k in range(maxCycles):
         h = sigmoid(dataMatrix*weights)
         error = (labelMat-h)
-        weights = weights +alpha * dataMatrix.transpose()*error
+        weights = weights + alpha * dataMatrix.transpose() * error
     return weights
 
 # 随机梯度上升算法
 def randGradAscent(dataMatrix, classLabels,numerIter=150):
     m,n = shape(dataMatrix)
-    alpha = 0.01
+    # alpha = 0.01
     weights = ones(n)
     for j in range(numerIter):   #添加迭代
         dataIndex = range(m)
@@ -73,6 +73,7 @@ def plotBestFit(wei):
     plt.xlabel('X1')
     plt.ylabel('X2')
     plt.show()
+
 
 if __name__=='__main__':
     dataArr, labelMat = loadDataSet()

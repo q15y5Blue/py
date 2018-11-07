@@ -88,7 +88,7 @@ class BasicQSession(object):
                 time.sleep(3)
                 authStatus = self.getAuthStatus()
                 if '二维码未失效' in authStatus:
-                    if x:
+                    if  x:
                         INFO('等待二维码扫描及授权...')
                         x = 0
                 elif '二维码认证中' in authStatus:

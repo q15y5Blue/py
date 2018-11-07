@@ -89,7 +89,7 @@ class NetProtocol(object):
     # testProxy
     def testProxy(self):
         url = "http://icanhazip.com/"
-        print("正在尝试使用代理连接", self.prox)
+        print("正在测试代理连接", self.prox)
         try:
             req = requests.get(url, proxies=self.prox)
             if req.text.strip() == str(self.location).strip():
@@ -106,5 +106,8 @@ class NetProtocol(object):
 
 if __name__ == '__main__':
     pro = NetProtocol()
-    pro.pagingCraw()
+    if pro.testProxy() == True:
+        req = requests.get("https://tieba.baidu.com/f?kw=%CB%AB%C3%CE%D5%F2&pn=0&", pro.prox)
+        print(req.status_code)
+    # pro.pagingCraw()
     # pass

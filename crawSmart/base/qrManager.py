@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # 二维码管理器 PIL &
 import uuid #（Universally Unique Identifier)
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import wcwidth
 import sys, platform
 from PIL import Image as img
@@ -9,13 +11,17 @@ from PIL import Image as img
 class QrcodeManager(object):
     def __init__(self):
         self.qrcodePath = "../img/qrCode.png"
-        self.qrcode = self.showImg()
+        # self.qrcode = self.showImg()
 
     def showImg(self):
-        with open(self.qrcodePath, 'rb') as f:
-            file = f.read()
-        return file
+        imgFile = mpimg.imread(self.qrcodePath)
+        # imgFile.shape
+        plt.imshow(imgFile,cmap='gray')
+        plt.axis('off')
+        plt.show()
 
+
+    #暂时不能使用
     def showImgAsText(self):
         size = 33
         padding = 1
@@ -79,4 +85,4 @@ class QrcodeManager(object):
 
 if __name__ =="__main__":
     qr = QrcodeManager()
-    qr.showImgText()
+    # qr.showImg()
