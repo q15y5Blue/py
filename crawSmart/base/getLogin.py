@@ -41,7 +41,7 @@ class BaseAction(object):
     def getUrl(self, url, data=None, referer=None, origin=None):
         referer and self.session.headers.update({'Referer': referer})
         origin and self.session.headers.update({'Origin': origin})
-        timeout = 30 if url != 'http://w.qq.com/' else 120  # 这里url已经不存在了######################question1111
+        timeout = 30 if url != 'https://d1.web2.qq.com/channel/poll2' else 120  # 这里url已经不存在了######################question1111
         try:
             if data is None:
                 return self.session.get(url, timeout=timeout)
@@ -95,7 +95,7 @@ class BaseAction(object):
                     qrcodeShow.showImg()
                     x, y = 1, 1
                 elif '登录成功' in qrStatus:
-                    print(qrStatus)
+                    # print(qrStatus)
                     log.info('已获授权')
                     items = qrStatus.split(',')
                     self.nick = str(items[-1].split("'")[1])
@@ -115,11 +115,12 @@ class BaseAction(object):
         url = "https://s.web2.qq.com/api/getvfwebqq?ptwebqq=&clientid=%s&psessionid=&t=%s" \
               %(self.clientid,repr(random.random()* 900000 + 1000000))
         Referer = "https://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"
-        Origin = 'https://s.web2.qq.com'
+        # Origin = 'https://s.web2.qq.com'
         try:
             vfwebqq = self.smartRequest(url)['vfwebqq']
             self.vfwebqq = vfwebqq
-            print(self.vfwebqq)
+            self.ptwebqq = ''
+            # print(self.vfwebqq)
             # self.vfwebqq = self.smartRequest(url)# 获取vfwebqq
             log.info('已经获取vfwebqq')
         except Exception as e:
@@ -127,13 +128,14 @@ class BaseAction(object):
 
     # 获取各种登录参数后真正的登录了
     def getUinandPsessionId(self):
-        rData = {"ptwebqq": "", "clientid": self.clientid, "psessionid": "", "status": "online"}
-        thisData = {'r':rData}
-        # newData=json.dumps(thisData)
-        # print(thisData)
         result = self.smartRequest(
             url='https://d1.web2.qq.com/channel/login2',
-            data=thisData,
+            data={
+                'r': json.dumps({
+                    'ptwebqq': self.ptwebqq, 'clientid': self.clientid,
+                    'psessionid': '', 'status': 'online'
+                })
+            },
             Referer="https://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2",
             Origin="https://d1.web2.qq.com"
         )
@@ -147,13 +149,36 @@ class BaseAction(object):
     # requests
     def smartRequest(self, url, data=None, Referer=None, Origin=None):
         resp = self.getUrl(url, data, Referer, Origin)
-        print(resp.content)
+        # print(resp.content)
         if resp.status_code == 200:
             reJs = resp.json()
             if reJs['retcode'] == 0:
                 return reJs['result']
             else:
                 None
+
+    def poll(self):
+        try:
+            result = self.smartRequest(
+                url = 'https://d1.web2.qq.com/channel/poll2',
+                data = {
+                    'r':json.dumps({
+                        'ptwebqq':self.ptwebqq,'clientid':self.clientid,
+                        'pessionid':self.psessionid,'key':''
+                    })
+                },
+                Referer="https://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2",
+                Origin="https://d1.web2.qq.com",
+                # expectedCodes = (0,100003,100100,100012)
+            )
+            print(result)
+            ctype = {
+                'message':'buddy',
+                'group_message':'group',
+                'discu_message':'discuss'
+            }
+        except Exception as e:
+            print(e)
 
 def bknHash(skey, init_str=5381):
     hash_str = init_str
@@ -165,7 +190,7 @@ def bknHash(skey, init_str=5381):
 def qHash(x, K):
     N = [0] * 4
     for T in range(len(K)):
-        N[T%4] ^= ord(K[T])
+        N[T % 4] ^= ord(K[T])
 
     U, V = 'ECOK', [0] * 4
     V[0] = ((x >> 24) & 255) ^ ord(U[0])
@@ -188,5 +213,4 @@ def qHash(x, K):
 if __name__ == "__main__":
     ba = BaseAction()
     ba.loginAction(conf="")
-    # ba.getQRCodeImg()
-    # 1537345958489
+    ba.poll()

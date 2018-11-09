@@ -10,13 +10,4 @@ cookie ={
     'pgv_info': 'ssid pgv_pvid=1051433466',
     'ptcz': 'ad3bf14f9da2738e09e498bfeb93dd9da7540dea2b7a71acfb97ed4d3da4e277',
     'qrsig': 'hJ9GvNx*oIvLjP5I5dQ19KPa3zwxNI62eALLO*g2JLbKPYsZIRsnbJIxNe74NzQQ',
-    'pt_clientip':'7a5d5fa3cbfa9479',
-    'DOMAIN':'ptlogin2.qq.com',
-    'pt_serverip':'c928646c2026779e',
-    'pt_user_id':'17076570243259398985',
-    'uikey':'b3e809c6c2280f3684e679b2892e6f30e0fd2fb229a3bf67e9c67bd1b6a498d5',
-    'pt_guid_sig':'aa35c7f7216c9a76ca2dc743f234349465e42058f54ec69a1cc0400ad1dc9ab9',
-    'ptui_identifier':'000E012867196A7C8E7E08189E6E1586013306695F991B351C0E08363CD8',
-    'pt_login_sig':'-wdgCmSflVlaaDVR*wsHJwByuK9qLbc1QlKNfdZO5qqVOfe5SipVeePZj8GclF6d',
-    'pt_local_token':'301726155',
 }
