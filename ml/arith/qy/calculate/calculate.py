@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 # all of calculate
 from numpy import *
+import itertools
+from itertools import permutations
+from itertools import combinations
 import  numpy as np
 def loadDataSet():
     alpha = np.array([[0.83,0.12,0.42,0.53,0.22],
@@ -16,7 +19,7 @@ def loadDataSet():
                  [0.61,0.92,0.54,0.19,1.0,0.51,0.68,0.43],
                  [0.82,0.63,0.27,0.49,0.59,0.87,0.69,0.61],
                  [0.86,0.76,0.30,0.0,0.46,0.70,0.66,0.20]])
-    return alpha, beta #  n8 m5
+    return alpha, beta  #  n8 m5
 
 def subjectTo(alpha, beta):
     alphaOnes = zeros(alpha.shape)
@@ -28,20 +31,25 @@ def subjectTo(alpha, beta):
             temp[i][j]=1
             print(temp)
 
-#每行都有五种可能性
-def getAllparam():
-    pass
-    # if di>1:
-    #     for index in range(-1, col):
-    #         arr = np.zeros((col))
-    #         if index is not-1:
-    #             arr[index] = 1
-    #         print("arrrrrrrrL:", arr) #每一行都有arr这6种可能性
-    #     di-=1
-    #     if di >0:
-    #         return getAllparam(di,col)
+def getAllparam(arrayy):
+    row, col = arrayy.shape
+    vect = zeros((row,col))
+    baseList = getChose(col)
+    rowsList = []
+
+
+def getChose(col):
+    list = []
+    for index in range(-1, col):
+        arr = np.zeros((col))
+        if index is not-1:
+            arr[index] = 1
+        list.append(arr)
+    return list
 
 if __name__=="__main__":
-    al, be = loadDataSet()
-    demo = np.zeros(1, 5)
-    getAllparam(demo)
+    # al, be = loadDataSet()
+    # demo = np.zeros((1, 5))
+    # getAllparam(demo)
+    matrix = [[0, 0]] * 5
+    print(matrix)
