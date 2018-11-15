@@ -106,8 +106,7 @@ class NetProtocol(object):
 
 if __name__ == '__main__':
     pro = NetProtocol()
-    if pro.testProxy() == True:
-        req = requests.get("https://tieba.baidu.com/f?kw=%CB%AB%C3%CE%D5%F2&pn=0&", pro.prox)
-        print(req.status_code)
-    # pro.pagingCraw()
-    # pass
+    # if pro.testProxy() == True:
+    #     req = requests.get("https://tieba.baidu.com/f?kw=%CB%AB%C3%CE%D5%F2&pn=0&", pro.prox)
+    #     print(req.status_code)
+    pro.pagingCraw()

@@ -4,7 +4,7 @@ from numpy import *
 import itertools
 from itertools import permutations
 from itertools import combinations
-import  numpy as np
+import numpy as np
 def loadDataSet():
     alpha = np.array([[0.83,0.12,0.42,0.53,0.22],
                   [0.73,0.23,0.39,0.65,0.34],
