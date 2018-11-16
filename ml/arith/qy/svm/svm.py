@@ -5,22 +5,27 @@
 # separating隔 hyperplane超平面 margin间隔
 # 希望找到离分割超平面最近的点，确保他们离分割面的距离尽可能远（margin :点到分割面距离）
 # argmax(min(lable*(W^T+b))/|W|)
-
+import time
 import random
 import numpy as np
 from numpy import *
+from .kernel import kernelTrans
 fileName = '../data/svm/testSet.txt'
 # Sequential Minimal Optimization 序列最小优化
 class SMO(object):
     # 修改后的Platt SMO
-    def __init__(self, C=None, toler=None):
+    def __init__(self, C=None, toler=None,kTup=None):
         self.X, self.labelMat = self.loadDataSet()
         self.C = C if C is not None else 0.6
         self.tol = toler if toler is not None else 0.001
         self.m = self.X.shape[0]
         self.alphas = mat(zeros((self.m, 1)))
         self.b = 0
-        self.eChache = mat(zeros((self.m, 2))) # 误差缓存
+        self.eChache = mat(zeros((self.m, 2)))  # 误差缓存
+        self.K = mat(zeros((self.m,self.m)))
+        self.kTup = ('lin',0) if kTup is None else kTup
+        for i in range(self.m):
+            self.K[:,i] =kernelTrans(self.X,self.X[i,:], self.kTup)
 
     def calcEk(self, k):
         fXk = float(multiply(self.alphas,self.labelMat).T*(self.X*self.X[k,:].T))+self.b
@@ -78,9 +83,9 @@ class SMO(object):
                 return 0
             self.alphas[i] += self.labelMat[j]*self.labelMat[i]*(alphaJold-self.alphas[j])
             self.updateEk(i)
-            b1 = self.b - Ei- self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[i,:].T-\
+            b1 = self.b - Ei - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[i,:].T -\
                  self.labelMat[j]*(self.alphas[j]-alphaJold)*self.X[i,:]*self.X[j,:].T
-            b2 = self.b - Ej- self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[j,:].T-\
+            b2 = self.b - Ej- self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[j,:].T -\
                  self.labelMat[j]*(self.alphas[j]-alphaJold)*self.X[j,:]*self.X[j,:].T
             if (0<self.alphas[i]) and (self.C>self.alphas[i]):
                 self.b = b1
