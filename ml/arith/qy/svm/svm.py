@@ -28,7 +28,10 @@ class SMO(object):
             self.K[:,i] =kernelTrans(self.X,self.X[i,:], self.kTup)
 
     def calcEk(self, k):
-        fXk = float(multiply(self.alphas,self.labelMat).T*(self.X*self.X[k,:].T))+self.b
+        # 未使用核函数
+        # fXk = float(multiply(self.alphas,self.labelMat).T*(self.X*self.X[k,:].T))+self.b
+        # 使用核函数
+        fXk = float(multiply(self.alphas,self.labelMat).T*self.K[:,k]+self.b)
         Ek = fXk - float(self.labelMat[k])
         return Ek
 
@@ -71,7 +74,10 @@ class SMO(object):
             if L==H:
                 # print("L==H")
                 return 0
-            eta = 2.0*self.X[i,:]*self.X[j,:].T-self.X[i,:]*self.X[i,:].T-self.X[j,:]*self.X[j,:].T
+            # 未使用核函数时
+            # eta = 2.0*self.X[i,:]*self.X[j,:].T-self.X[i,:]*self.X[i,:].T-self.X[j,:]*self.X[j,:].T
+            # 添加核函数
+            eta = 2.0*self.K[i,j]-self.K[i,i]-self.K[j,j]
             if eta>=0:
                 # print("eta<=0")
                 return 0
@@ -83,10 +89,14 @@ class SMO(object):
                 return 0
             self.alphas[i] += self.labelMat[j]*self.labelMat[i]*(alphaJold-self.alphas[j])
             self.updateEk(i)
-            b1 = self.b - Ei - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[i,:].T -\
-                 self.labelMat[j]*(self.alphas[j]-alphaJold)*self.X[i,:]*self.X[j,:].T
-            b2 = self.b - Ej- self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[j,:].T -\
-                 self.labelMat[j]*(self.alphas[j]-alphaJold)*self.X[j,:]*self.X[j,:].T
+            # 未使用核函数
+            # b1 = self.b - Ei - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[i,:].T -\
+            #      self.labelMat[j]*(self.alphas[j]-alphaJold)*self.X[i,:]*self.X[j,:].T
+            # b2 = self.b - Ej- self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[j,:].T -\
+            #      self.labelMat[j]*(self.alphas[j]-alphaJold)*self.X[j,:]*self.X[j,:].T
+            # 使用核函数
+            b1 = self.b - Ei - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.K[i,i]-self.labelMat[j]*(self.alphas[j]-alphaJold)*self.K[i,j]
+            b2 = self.b - Ej - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.K[i,j]-self.labelMat[j]*(self.alphas[j]-alphaJold)*self.K[j,j]
             if (0<self.alphas[i]) and (self.C>self.alphas[i]):
                 self.b = b1
             elif (0<self.alphas[j]) and self.C>self.alphas[j]:
