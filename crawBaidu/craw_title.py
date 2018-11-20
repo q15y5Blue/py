@@ -13,35 +13,31 @@ from bs4 import BeautifulSoup
 
 class crawArticle(object):
     def __init__(self):#初始化的url都是有参数的
-        self.baseUrl = 'https://tieba.baidu.com/f?kw=%CB%AB%C3%CE%D5%F2&pn=0&'
-        self.articleDetails = "https://tieba.baidu.com/mo/q/m?kz=%s&is_ajax=1&post_type=normal&_t=1541397696480&pn=%s&is_ajax=1"
-        self.articleUrl = 'https://tieba.baidu.com/p/%s?pn=%s&'
+        self.baseUrl = "https://tieba.baidu.com/mo/q/m?kw=剑网3&pn=%d&forum_recommend=1&lm=0&cid=0&has_url_param=0&is_ajax=1"
+        self.articleDetails = "https://tieba.baidu.com/mo/q/m?kz=%s&is_ajax=1&post_type=normal&_t=%d&pn=%s&is_ajax=1"
         self.detailsUrl = "https://tieba.baidu.com/mo/q/flr?fpn=%s&total_page=%s&kz=%s&pid=%s&is_ajax=1&has_url_param=0&template=lzl"
 
-    # 主页面爬取多少个article
-    def parserArticle(self):
-        beSession = BaseSession()
-        req = beSession.reqGet(url=self.baseUrl, proxies=True)
-        soup = BeautifulSoup(req.text, "html.parser")
-        list = soup.find_all('li',class_='tl_shadow tl_shadow_new')
-        articleList = []
-        for result in list:
-            ar = article()
-            ar.title = result.find('div',class_='ti_title').text.strip()
-            ar.date = getTime(result.find('span', class_='ti_time').text.strip())
-            ar.id = result.find('a', class_='j_common ti_item')['tid'].strip()
-            ar.username = result.find('span', class_='ti_author').text.strip()
-            ar.replyList = self.crawReplyExecute(ar)
-            self.importArticle(ar)
-            # articleList.append(ar)
-        # return articleList
 
-    def parseReplyDetails(self, articleObj, page):
+    def parserArticle(self):
+        baseSession = BaseSession()
+        for pageNo in range(1):
+            baseInfoUrl = self.baseUrl % (pageNo * 50)
+            infoJson = baseSession.reqGet(baseInfoUrl, proxies=True).json()
+            soup = BeautifulSoup(infoJson['data']['content'],'html.parser')
+            list = soup.find_all('li', class_='tl_shadow tl_shadow_new')
+            for result in list:
+                ar = article()
+                ar.title = result.find('div', class_='ti_title').text.strip()
+                ar.date = getTime(result.find('span', class_='ti_time').text.strip())
+                ar.id = result.find('a', class_='j_common ti_item')['tid'].strip()
+                ar.username = result.find('span', class_='ti_author').text.strip()
+                ar.replyList = self.crawReplyExecute(ar)
+                self.importArticle(ar)
+
+    def parseReplyDetails(self, articleObj,doc):
         beSession = BaseSession()
-        url = self.articleUrl %(articleObj.id, str(page))
-        req = beSession.reqGet(url=url,proxies=True)# , proxies=True
-        soup = BeautifulSoup(req.text, "html.parser")
-        list = soup.find('ul', id='pblist').find_all('li', class_='list_item')
+        soup = BeautifulSoup(doc, "html.parser")
+        list = soup.find_all('li', class_='list_item')
         replyList = []
         childRsList = [] # 回复的回复，child of reply
         for li in list:
@@ -57,6 +53,7 @@ class crawArticle(object):
             childList = li.find('ul', class_='flist') # 有flist属性才会有回复
             if childList is not None:
                 if li.find('a', class_='fload_more_btn') is not None:
+                    # 拥有楼中楼
                     lp = self.parseDetailsOfReply(articleObj, repd=rp)
                     if(len(lp)>0):
                         childRsList.extend(lp)
@@ -78,19 +75,18 @@ class crawArticle(object):
 
     # 获取评论的回复
     def parseDetailsOfReply(self, article, repd):
-        url = "https://tieba.baidu.com/mo/q/post/floor/%s" % repd.id
+        url ="https://tieba.baidu.com/mo/q/flr?kz=%s&pid=%s&is_ajax=1&has_url_param=0&template=lzl" %(article.id, repd.id)
         beSession = BaseSession()
-        # proxy = NetProtocol()
-        req = beSession.reqGet(url=url,proxies=True)# , proxies=proxy
-        soup = BeautifulSoup(req.text, "html.parser")
-        totalPage = int(soup.find('div', class_='pb_lzl_loading_more_bar')['total-page'])
+        req = beSession.reqGet(url=url,proxies=True).json() # , proxies=proxy
         list = []
-        for nowPage in range(1, totalPage+1):
-            detailUrl = self.detailsUrl% (nowPage, totalPage, article.id, repd.id)
-            reqDetais = beSession.reqGet(url=detailUrl, proxies=True)
-            reJson = reqDetais.json()['data']['floor_html']
-            liList = BeautifulSoup(reJson, "html.parser")
-            childList= []
+        try:
+            totalPage = req['data']['page']['total_page']
+            # current_page = req['data']['page']['current_page']
+        except Exception as exp:
+            print(exp)
+        if totalPage == 1 or totalPage=='1':
+            childList = []
+            liList = BeautifulSoup(req['data']['floor_html'], 'html.parser')
             for li in liList:
                 repl = reply()
                 userinf = li['data-info']
@@ -98,25 +94,44 @@ class crawArticle(object):
                 repl.id = userinfo['pid']
                 repl.author = userinfo['un']
                 repl.content = li.find('span', class_='lzl_content').text.strip()
-                repl.date=getTime(li.find('p').text.strip())
+                repl.date = getTime(li.find('p').text.strip())
                 repl.fn = repd.id
-                # repl.articleId = article.id
                 childList.append(repl)
-                # print(repl) test Message
             list.extend(childList)
+        else:
+            for nowPage in range(1, totalPage+1):
+                detailUrl = self.detailsUrl% (nowPage, totalPage, article.id, repd.id)
+                reqDetais = beSession.reqGet(url=detailUrl, proxies=True)
+                reJson = reqDetais.json()['data']['floor_html']
+                liList = BeautifulSoup(reJson, "html.parser")
+                childList= []
+                for li in liList:
+                    repl = reply()
+                    userinf = li['data-info']
+                    userinfo = json.loads(userinf)
+                    repl.id = userinfo['pid']
+                    repl.author = userinfo['un']
+                    repl.content = li.find('span', class_='lzl_content').text.strip()
+                    repl.date=getTime(li.find('p').text.strip())
+                    repl.fn = repd.id
+                    childList.append(repl)
+                list.extend(childList)
         return list
 
     def crawReplyExecute(self, article):
         beSession = BaseSession()
-        articleInfoUrl = self.articleDetails % (article.id, str(0))
+        articleInfoUrl = self.articleDetails % (article.id, int(time.time()), str(0))# articleId time pn
         infoJson = beSession.reqGet(articleInfoUrl, proxies=True).json()
         totalPage = int(infoJson['data']['page']['total_page'])
+        offSet = int(infoJson['data']['page']['offset'])
         rsList = []
         if totalPage >= 1:
             for nowPage in range(1, totalPage+1):
-                list = self.parseReplyDetails(articleObj=article, page=nowPage)
+                doct = infoJson['data']['html']
+                list = self.parseReplyDetails(articleObj=article,doc=doct)
                 rsList.extend(list)
         return rsList
+
 
     def importArticle(self, ar):
         conn = DBConnect()
@@ -126,7 +141,6 @@ class crawArticle(object):
             sql = "insert into article(id,title,username,date)  values('%s','%s','%s','%s') " % (
             ar.id, ar.title, ar.username, ar.date)
             conn.update_info(sql)
-            # print(sql)
             self.importReply(ar)
 
     def importReply(self,art):
@@ -142,6 +156,8 @@ class crawArticle(object):
                     li.id,li.content,li.author,li.date,li.floor_num, li.fn, art.id)
                 print(sql)
                 con.update_info(sql)
+
+
 
 
 def getTime(timeStr):
@@ -164,10 +180,3 @@ def getTime(timeStr):
 if __name__=='__main__':
     ar = crawArticle()
     ar.parserArticle()
-    # ar.crawReplyExecute('5570271280')
-    # article = article()
-    # article.id = '5937421881'
-    # list = ar.crawReplyExecute(article=article)
-    # print(len(list))
-    # for res in list :
-    #     print(res)

@@ -9,8 +9,8 @@ import time
 import random
 import numpy as np
 from numpy import *
-from .kernel import kernelTrans
-fileName = '../data/svm/testSet.txt'
+from ml.arith.qy.svm.kernel import kernelTrans
+
 # Sequential Minimal Optimization 序列最小优化
 class SMO(object):
     # 修改后的Platt SMO
@@ -107,6 +107,7 @@ class SMO(object):
         else:
             return 0
 
+    # def smoP(dataMatIn,classLabels,C,toler,maxIter,kTup=('lin',0))
     def smoP(self,maxIter, kTup=('lin',0)):
         iter = 0
         entireSet =True; alphaPairsChanged = 0
@@ -131,7 +132,7 @@ class SMO(object):
     # Common
     def loadDataSet(self):
         DataMat = []; labelMat= []
-        fr = open(fileName)
+        fr = open('../data/svm/testSet.txt')
         for line in fr.readlines():
             lineArr = line.strip().split('\t')
             DataMat.append([float(lineArr[0]),float(lineArr[1])])
@@ -209,8 +210,8 @@ def clipAlpha(aj,H,L):
         aj =L
     return aj
 
-if __name__=='__main__':
-    # dataMat,labelMat = smo.loadDataSet(fileName)
-    smo =SMO()
-    smo.smoP(40)
-    # print(smo.X)
+# if __name__=='__main__':
+#     # dataMat,labelMat = smo.loadDataSet(fileName)
+#     smo =SMO()
+#     smo.smoP(40)
+#     # print(smo.X)
