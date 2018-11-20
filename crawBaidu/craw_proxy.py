@@ -8,7 +8,17 @@ import requests.exceptions as exc
 import re
 import time
 
-
+head = {
+    'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Mobile Safari/537.36',
+    'Referer':'',
+    'Host':'www.66ip.cn'
+}
+MyCookies = {
+    'Hm_lvt_1761fabf3c988e7f04bec51acd4073f4':'1542617641,1542678173',
+    'Hm_lpvt_1761fabf3c988e7f04bec51acd4073f4':'1542678800',
+    'yd_cookie':'4f426518bf74658fcefc5d68543bfc582ff5',
+    '_ydclearance':'9625d57b804e483fa626106a-9bd1-487e-bd80-bad800bf0989-1542685996'
+}
 class NetProtocol(object):
     def __init__(self, location=None, port=None):
         self.location = location
@@ -52,7 +62,8 @@ class NetProtocol(object):
 
     # 获取每一个页的ipList http://www.66ip.cn/%s.html
     def craw_ipList(self, url):
-        req = requests.get(url, timeout=120)
+        head['Referer'] = url
+        req = requests.get(url, timeout=120, headers=head,cookies=MyCookies)
         req.encoding = "utf-8"
         soup = BeautifulSoup(req.text, "html.parser")
         table_li = soup.find_all("table", width="100%").__getitem__(0)
@@ -91,7 +102,7 @@ class NetProtocol(object):
         url = "http://icanhazip.com/"
         print("正在测试代理连接", self.prox)
         try:
-            req = requests.get(url, proxies=self.prox)
+            req = requests.get(url, proxies=self.prox, headers=head)
             if req.text.strip() == str(self.location).strip():
                 return True
         except Exception:
