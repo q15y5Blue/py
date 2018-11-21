@@ -13,10 +13,9 @@ from bs4 import BeautifulSoup
 
 class crawArticle(object):
     def __init__(self):#初始化的url都是有参数的
-        self.baseUrl = "https://tieba.baidu.com/mo/q/m?kw=剑网3&pn=%d&forum_recommend=1&lm=0&cid=0&has_url_param=0&is_ajax=1"
+        self.baseUrl = "https://tieba.baidu.com/mo/q/m?kw=剑网3&pn=%d&lm=0&cid=0&has_url_param=0&is_ajax=1"
         self.articleDetails = "https://tieba.baidu.com/mo/q/m?kz=%s&is_ajax=1&post_type=normal&_t=%d&pn=%s&is_ajax=1"
         self.detailsUrl = "https://tieba.baidu.com/mo/q/flr?fpn=%s&total_page=%s&kz=%s&pid=%s&is_ajax=1&has_url_param=0&template=lzl"
-
 
     def parserArticle(self):
         baseSession = BaseSession()
@@ -25,18 +24,21 @@ class crawArticle(object):
             infoJson = baseSession.reqGet(baseInfoUrl, proxies=True).json()
             soup = BeautifulSoup(infoJson['data']['content'],'html.parser')
             list = soup.find_all('li', class_='tl_shadow tl_shadow_new')
-            conn = DBConnect()
             for result in list:
                 ar = article()
                 ar.title = result.find('div', class_='ti_title').text.strip()
                 ar.date = getTime(result.find('span', class_='ti_time').text.strip())
                 ar.id = result.find('a', class_='j_common ti_item')['tid'].strip()
                 ar.username = result.find('span', class_='ti_author').text.strip()
+                ar.user.img_path = result.find('img')['src']
+                ar.user.username = result.find('span',class_='ti_author').text.strip()
+                conn = DBConnect()
                 flag = conn.get_date("select id from article where id = '%s' " % ar.id)
                 if flag is None:
                     ar.replyList = self.crawReplyExecute(ar)
-                    self.importArticle(ar,conn)
+                    self.importArticle(ar, conn)
                 else:
+                    conn.closeCnt()
                     print("该Article已经存在，不再进行爬取。")
 
 
@@ -47,6 +49,7 @@ class crawArticle(object):
         replyList = []
         childRsList = [] # 回复的回复，child of reply
         for li in list:
+            print(li)
             rp=reply()
             userinf = li['data-info']
             userinfo = json.loads(userinf)
@@ -55,6 +58,8 @@ class crawArticle(object):
             rp.floor_num = userinfo['floor_num']
             rp.content = li.find('div', class_='content').text.strip()
             rp.date = getTime(li.find('span', class_='list_item_time').text.strip())
+            rp.user.username = li.find('span', class_="user_name").text.strip()
+            print(rp.user.username)
             # 对于回复的回复，并不再添加一层，而是并列与父类在一层
             childList = li.find('ul', class_='flist') # 有flist属性才会有回复
             if childList is not None:
@@ -145,29 +150,31 @@ class crawArticle(object):
         return rsList
 
 
-    def importArticle(self, ar,Con):
-        # conn = DBConnect()
-        # flag = Con.get_date("select id from article where id = '%s' " % ar.id)
-        # if flag is None:
+    def importArticle(self, ar, Con):
         print("insert a article")
-        sql = "insert into article(id,title,username,date)  values('%s','%s','%s','%s') " % \
-              (ar.id, ar.title, ar.username, ar.date)
+        userFlag = ar.user.checkUserByUserName(ar.username)
+        # userFlag = Con.get_date("select id,username from users where username = '%s' "%ar.username)
+        if userFlag is None:
+            Con.update_info("insert into users(img_path,username) values ('%s','%s') "%(ar.user.img_path, ar.user.username))
+            userFlag = ar.user.checkUserByUserName(ar.username)
+        sql = "insert into article(id,title,user_id,date)  values('%s','%s','%s','%s') " % (ar.id, ar.title, userFlag, ar.date)
         Con.update_info(sql)
         self.importReply(ar)
+        Con.closeCnt()
 
     def importReply(self,art):
         con = DBConnect()
         for li in art.replyList:
-            # print("insert a reply")
             flag = con.get_date("select id from reply where id = '%s' " %li.id)
             if flag is None:
                 li.fn = 0 if li.fn == "" else li.fn
                 li.floor_num = -1 if li.floor_num == "" else li.floor_num
                 li.date = art.date if li.date == "" or li.date == None  else li.date
-                sql = "insert into reply(id,content,author,date,floor_num,fn,articleId)values('%s','%s','%s','%s','%s','%s','%s')"%(
+                sql = "insert into reply(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')"%(
                     li.id, li.content, li.author,li.date,li.floor_num, li.fn, art.id)
                 print(sql)
                 con.update_info(sql)
+        con.closeCnt()
 
 
 

@@ -23,7 +23,7 @@ class NetProtocol(object):
         self.type = type
         self.ip = self.__str__()#:
         self.prox = {'http': self.ip, 'https': self.ip}
-        if self.location == None and self.port==None:
+        if self.location is None and self.port is None and type is None:
             self.getIp()
 
     def __str__(self):
@@ -35,12 +35,16 @@ class NetProtocol(object):
     # 初始化ip
     def getIp(self):
         cnt = DBConnect()
-        sql = "select location,port from proxy order by rand()"
-        data = cnt.get_date(sql)
-        self.location = data[0]
-        self.port = data[1]
-        self.ip = self.__str__()
-        self.prox = {'http': self.ip, 'https': self.ip}
+        try:
+            sql = "select location,port from proxy order by rand()"
+            data = cnt.get_date(sql)
+            self.location = data[0]
+            self.port = data[1]
+            self.ip = self.__str__()
+            self.prox = {'http': self.ip, 'https': self.ip}
+        except Exception as e:
+            print("代理吃空了，放缓爬虫速度")
+            time.sleep(2)
         cnt.closeCnt()
 
     #获取所有proxies
@@ -63,6 +67,7 @@ class NetProtocol(object):
 
     def craw_ipList(self,url):
         req = requests.get(url, timeout=12, headers=head)
+        print(req.status_code)
         if req.status_code == 200:
             ipList = []
             req.encoding="utf-8"

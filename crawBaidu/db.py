@@ -21,7 +21,10 @@ class DBConnect(object):
         # self.pool = pool(pool_name="myPool", pool_size=6, **self.config)
 
     def __del__(self):
-        self.connect.close()
+        try:
+            self.connect.close()
+        except Exception as e:
+            print(e)
 
     def get_date(self, sql):
         cursor = self.connect.cursor(buffered=True)
@@ -31,7 +34,10 @@ class DBConnect(object):
         return data
 
     def closeCnt(self):
-        self.connect.close()
+        try:
+            self.connect.close()
+        except Exception as e:
+            print(e)
 
     def get_allData(self,sql):
         cursor = self.connect.cursor(buffered=True)
