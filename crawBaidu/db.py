@@ -30,6 +30,8 @@ class DBConnect(object):
         cursor.close()
         return data
 
+    def closeCnt(self):
+        self.connect.close()
 
     def get_allData(self,sql):
         cursor = self.connect.cursor(buffered=True)

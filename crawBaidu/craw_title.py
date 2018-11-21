@@ -25,14 +25,20 @@ class crawArticle(object):
             infoJson = baseSession.reqGet(baseInfoUrl, proxies=True).json()
             soup = BeautifulSoup(infoJson['data']['content'],'html.parser')
             list = soup.find_all('li', class_='tl_shadow tl_shadow_new')
+            conn = DBConnect()
             for result in list:
                 ar = article()
                 ar.title = result.find('div', class_='ti_title').text.strip()
                 ar.date = getTime(result.find('span', class_='ti_time').text.strip())
                 ar.id = result.find('a', class_='j_common ti_item')['tid'].strip()
                 ar.username = result.find('span', class_='ti_author').text.strip()
-                ar.replyList = self.crawReplyExecute(ar)
-                self.importArticle(ar)
+                flag = conn.get_date("select id from article where id = '%s' " % ar.id)
+                if flag is None:
+                    ar.replyList = self.crawReplyExecute(ar)
+                    self.importArticle(ar,conn)
+                else:
+                    print("该Article已经存在，不再进行爬取。")
+
 
     def parseReplyDetails(self, articleObj,doc):
         beSession = BaseSession()
@@ -125,23 +131,29 @@ class crawArticle(object):
         totalPage = int(infoJson['data']['page']['total_page'])
         offSet = int(infoJson['data']['page']['offset'])
         rsList = []
-        if totalPage >= 1:
-            for nowPage in range(1, totalPage+1):
+        for nowPage in range(1, totalPage+1):
+            if nowPage ==1:
                 doct = infoJson['data']['html']
-                list = self.parseReplyDetails(articleObj=article,doc=doct)
+                list = self.parseReplyDetails(articleObj=article, doc=doct)
+                rsList.extend(list)
+            else:
+                articleMoreInfoUrl = self.articleDetails % (article.id, int(time.time()), str(offSet*nowPage))  # articleId time pn
+                infoJson = beSession.reqGet(articleMoreInfoUrl, proxies=True).json()
+                doct = infoJson['data']['html']
+                list = self.parseReplyDetails(articleObj=article, doc=doct)
                 rsList.extend(list)
         return rsList
 
 
-    def importArticle(self, ar):
-        conn = DBConnect()
-        flag = conn.get_date("select id from article where id = '%s' " % ar.id)
-        if flag is None:
-            print("insert a article")
-            sql = "insert into article(id,title,username,date)  values('%s','%s','%s','%s') " % (
-            ar.id, ar.title, ar.username, ar.date)
-            conn.update_info(sql)
-            self.importReply(ar)
+    def importArticle(self, ar,Con):
+        # conn = DBConnect()
+        # flag = Con.get_date("select id from article where id = '%s' " % ar.id)
+        # if flag is None:
+        print("insert a article")
+        sql = "insert into article(id,title,username,date)  values('%s','%s','%s','%s') " % \
+              (ar.id, ar.title, ar.username, ar.date)
+        Con.update_info(sql)
+        self.importReply(ar)
 
     def importReply(self,art):
         con = DBConnect()
@@ -153,7 +165,7 @@ class crawArticle(object):
                 li.floor_num = -1 if li.floor_num == "" else li.floor_num
                 li.date = art.date if li.date == "" or li.date == None  else li.date
                 sql = "insert into reply(id,content,author,date,floor_num,fn,articleId)values('%s','%s','%s','%s','%s','%s','%s')"%(
-                    li.id,li.content,li.author,li.date,li.floor_num, li.fn, art.id)
+                    li.id, li.content, li.author,li.date,li.floor_num, li.fn, art.id)
                 print(sql)
                 con.update_info(sql)
 
