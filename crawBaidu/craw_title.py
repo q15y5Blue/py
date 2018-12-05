@@ -4,9 +4,7 @@ import time
 import datetime
 from crawBaidu.conection import BaseSession
 from crawBaidu.db import DBConnect
-from bs4 import Tag
 from crawBaidu.entity import *
-import requests
 import json
 import re
 from bs4 import BeautifulSoup
@@ -32,6 +30,7 @@ class crawArticle(object):
                 ar.username = result.find('span', class_='ti_author').text.strip()
                 ar.user.img_path = result.find('img')['src']
                 ar.user.username = result.find('span',class_='ti_author').text.strip()
+
                 conn = DBConnect()
                 flag = conn.get_date("select id from article where id = '%s' " % ar.id)
                 if flag is None:
@@ -49,7 +48,6 @@ class crawArticle(object):
         replyList = []
         childRsList = [] # 回复的回复，child of reply
         for li in list:
-            print(li)
             rp=reply()
             userinf = li['data-info']
             userinfo = json.loads(userinf)
@@ -57,9 +55,11 @@ class crawArticle(object):
             rp.id = userinfo['pid']
             rp.floor_num = userinfo['floor_num']
             rp.content = li.find('div', class_='content').text.strip()
+            if rp.floor_num == 1 and articleObj.content == '':
+                articleObj.content = rp.content
             rp.date = getTime(li.find('span', class_='list_item_time').text.strip())
             rp.user.username = li.find('span', class_="user_name").text.strip()
-            print(rp.user.username)
+            rp.user.img_path = str(li.find('img', class_="user_img")['src']).replace("amp;", "")
             # 对于回复的回复，并不再添加一层，而是并列与父类在一层
             childList = li.find('ul', class_='flist') # 有flist属性才会有回复
             if childList is not None:
@@ -107,6 +107,8 @@ class crawArticle(object):
                 repl.content = li.find('span', class_='lzl_content').text.strip()
                 repl.date = getTime(li.find('p').text.strip())
                 repl.fn = repd.id
+                repl.user.username = repl.author
+                repl.user.img_path = str(li.find('img')['src'])
                 childList.append(repl)
             list.extend(childList)
         else:
@@ -125,6 +127,8 @@ class crawArticle(object):
                     repl.content = li.find('span', class_='lzl_content').text.strip()
                     repl.date=getTime(li.find('p').text.strip())
                     repl.fn = repd.id
+                    repl.user.username = repl.author
+                    repl.user.img_path = str(li.find('img')['src'])
                     childList.append(repl)
                 list.extend(childList)
         return list
@@ -134,9 +138,10 @@ class crawArticle(object):
         articleInfoUrl = self.articleDetails % (article.id, int(time.time()), str(0))# articleId time pn
         infoJson = beSession.reqGet(articleInfoUrl, proxies=True).json()
         totalPage = int(infoJson['data']['page']['total_page'])
-        offSet = int(infoJson['data']['page']['offset'])
+        offSet = int(infoJson['data']['page']['page_size'])
         rsList = []
         for nowPage in range(1, totalPage+1):
+            print("nowPage",nowPage,"  totalPage",totalPage,"  offSet:",offSet)
             if nowPage ==1:
                 doct = infoJson['data']['html']
                 list = self.parseReplyDetails(articleObj=article, doc=doct)
@@ -157,7 +162,8 @@ class crawArticle(object):
         if userFlag is None:
             Con.update_info("insert into users(img_path,username) values ('%s','%s') "%(ar.user.img_path, ar.user.username))
             userFlag = ar.user.checkUserByUserName(ar.username)
-        sql = "insert into article(id,title,user_id,date)  values('%s','%s','%s','%s') " % (ar.id, ar.title, userFlag, ar.date)
+        sql = "insert into article(id,title,user_id,date,content)  values('%s','%s','%s','%s','%s') " % (
+            ar.id, ar.title, userFlag, ar.date,ar.content)
         Con.update_info(sql)
         self.importReply(ar)
         Con.closeCnt()
@@ -172,7 +178,7 @@ class crawArticle(object):
                 li.date = art.date if li.date == "" or li.date == None  else li.date
                 sql = "insert into reply(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')"%(
                     li.id, li.content, li.author,li.date,li.floor_num, li.fn, art.id)
-                print(sql)
+                # print(sql)
                 con.update_info(sql)
         con.closeCnt()
 

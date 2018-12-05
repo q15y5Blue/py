@@ -3,7 +3,7 @@
 # 缺点：对于参数调节和核函数的选择敏感，原始分类器不加修改仅适用于二分类问题。
 # 数据类型：数值、 标称型数据
 # separating隔 hyperplane超平面 margin间隔
-# 希望找到离分割超平面最近的点，确保他们离分割面的距离尽可能远（margin :点到分割面距离）
+# 希望找到离分割超平面最近的点，确保他们离分割面的距离尽可能远（margin :点到分割面距离）//******最大化最小间隔
 # argmax(min(lable*(W^T+b))/|W|)
 import time
 import random
@@ -14,8 +14,8 @@ from ml.arith.qy.svm.kernel import kernelTrans
 # Sequential Minimal Optimization 序列最小优化
 class SMO(object):
     # 修改后的Platt SMO
-    def __init__(self, C=None, toler=None,kTup=None):
-        self.X, self.labelMat = self.loadDataSet()
+    def __init__(self, C=None, toler=None,kTup=None,X=None,labelMat=None):
+        self.X, self.labelMat = self.loadDataSet() if (X is None and labelMat is None) else (X,labelMat)
         self.C = C if C is not None else 0.6
         self.tol = toler if toler is not None else 0.001
         self.m = self.X.shape[0]
@@ -23,10 +23,11 @@ class SMO(object):
         self.b = 0
         self.eChache = mat(zeros((self.m, 2)))  # 误差缓存
         self.K = mat(zeros((self.m,self.m)))
-        self.kTup = ('lin',0) if kTup is None else kTup
+        self.kTup = ('lin', 0) if kTup is None else kTup
         for i in range(self.m):
-            self.K[:,i] =kernelTrans(self.X,self.X[i,:], self.kTup)
+            self.K[:, i] =kernelTrans(self.X,self.X[i,:], self.kTup)
 
+    # 计算准确度
     def calcEk(self, k):
         # 未使用核函数
         # fXk = float(multiply(self.alphas,self.labelMat).T*(self.X*self.X[k,:].T))+self.b
@@ -34,6 +35,14 @@ class SMO(object):
         fXk = float(multiply(self.alphas,self.labelMat).T*self.K[:,k]+self.b)
         Ek = fXk - float(self.labelMat[k])
         return Ek
+
+    def calcWs(self):
+        m,n = self.X.shape
+        w = zeros((n,1))
+        for i in range(m):
+            w += multiply(self.alphas[i]*self.labelMat[i],self.X[i,:].T)
+        return mat(w)
+
 
     def selectJ(self,i,Ei):
         maxK = -1; maxDeltaE = 0; Ej = 0
@@ -59,7 +68,7 @@ class SMO(object):
         self.eChache[k] = [1, Ek]
 
     # 内循环
-    def innerL(self,i):
+    def innerL(self, i):
         Ei = self.calcEk(i)
         if (self.labelMat[i]*Ei<-self.tol and self.alphas[i]<self.C) or (self.labelMat[i]*Ei>self.tol and self.alphas[i]>0):
             j,Ej = self.selectJ(i,Ei)
@@ -69,7 +78,7 @@ class SMO(object):
                 L = max(0,self.alphas[j]-self.alphas[i])
                 H = min(self.C,self.C+self.alphas[j]-self.alphas[i])
             else:
-                L = max(0,self.alphas[j]+self.alphas[i]-self.C)
+                L = max(0, self.alphas[j]+self.alphas[i]-self.C)
                 H = min(self.C, self.alphas[j]+self.alphas[i])
             if L==H:
                 # print("L==H")
@@ -77,7 +86,7 @@ class SMO(object):
             # 未使用核函数时
             # eta = 2.0*self.X[i,:]*self.X[j,:].T-self.X[i,:]*self.X[i,:].T-self.X[j,:]*self.X[j,:].T
             # 添加核函数
-            eta = 2.0*self.K[i,j]-self.K[i,i]-self.K[j,j]
+            eta = 2.0 * self.K[i, j] - self.K[i, i] - self.K[j, j]
             if eta>=0:
                 # print("eta<=0")
                 return 0
@@ -95,7 +104,7 @@ class SMO(object):
             # b2 = self.b - Ej- self.labelMat[i]*(self.alphas[i]-alphaIold)*self.X[i,:]*self.X[j,:].T -\
             #      self.labelMat[j]*(self.alphas[j]-alphaJold)*self.X[j,:]*self.X[j,:].T
             # 使用核函数
-            b1 = self.b - Ei - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.K[i,i]-self.labelMat[j]*(self.alphas[j]-alphaJold)*self.K[i,j]
+            b1 = self.b - Ei - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.K[i, i]-self.labelMat[j]*(self.alphas[j]-alphaJold)*self.K[i,j]
             b2 = self.b - Ej - self.labelMat[i]*(self.alphas[i]-alphaIold)*self.K[i,j]-self.labelMat[j]*(self.alphas[j]-alphaJold)*self.K[j,j]
             if (0<self.alphas[i]) and (self.C>self.alphas[i]):
                 self.b = b1
@@ -108,7 +117,7 @@ class SMO(object):
             return 0
 
     # def smoP(dataMatIn,classLabels,C,toler,maxIter,kTup=('lin',0))
-    def smoP(self,maxIter, kTup=('lin',0)):
+    def smoP(self, maxIter, kTup=('lin',0)):
         iter = 0
         entireSet =True; alphaPairsChanged = 0
         while(iter<maxIter) and (alphaPairsChanged>0 or entireSet):
@@ -116,28 +125,28 @@ class SMO(object):
             if entireSet:
                 for i in range(self.m):
                     alphaPairsChanged += self.innerL(i)
-                print("fullSet ,iter :%d i:%d , pairs changed %d"%(iter,i,alphaPairsChanged))
+                # print("fullSet ,iter :%d i:%d , pairs changed %d"%(iter,i,alphaPairsChanged))
                 iter +=1
             else:
                 nonBoundIs = nonzero((self.alphas.A>0)*(self.alphas.A<self.C))[0]
                 for i in nonBoundIs:
                     alphaPairsChanged += self.innerL(i)
-                    print("non-bound , iter : %d i: %d, pairs changed %d"%(iter,i,alphaPairsChanged))
+                    # print("non-bound , iter : %d i: %d, pairs changed %d"%(iter,i,alphaPairsChanged))
                 iter +=1
             if entireSet:entireSet=False
             elif(alphaPairsChanged==0):entireSet=True
-            print("iteration number:%d"%iter)
-        return self.b,self.alphas
+            # print("iteration number:%d"%iter)
+        return self.b, self.alphas
 
-    # Common
+    # return 数据集 和标签集
     def loadDataSet(self):
-        DataMat = []; labelMat= []
+        DataMat = []; labelMa= []
         fr = open('../data/svm/testSet.txt')
         for line in fr.readlines():
             lineArr = line.strip().split('\t')
             DataMat.append([float(lineArr[0]),float(lineArr[1])])
-            labelMat.append(float(lineArr[2]))
-        return mat(DataMat), mat(labelMat).transpose()
+            labelMa.append(float(lineArr[2]))
+        return mat(DataMat), mat(labelMa).transpose()
 
     # b, alphas = smo.smoSimple(dataMat, labelMat, 0.6, 0.001, 40)
     # for i in range(100):
@@ -145,18 +154,18 @@ class SMO(object):
     #         print(dataMat[i], labelMat[i])
     # 简化版的SMO算法  数据集，标签集，常数C,容错率，取消前最大的循环次数 test function upstairs
     def smoSimple(self,dataMatIn,classLabels,maxIter):
-        dataMatrix = mat(dataMatIn); labelMat = mat(classLabels).transpose()
+        dataMatrix = dataMatIn; labelMat = classLabels
         b = 0; m, n=shape(dataMatrix)
-        alphas = mat(zeros((m,1)))  # 创建一个alpha向量并将其初始化为0向量
+        alphas = mat(zeros((m, 1)))  # 创建一个alpha向量并将其初始化为0向量
         iter = 0
         while(iter<maxIter):  # 迭代循环
             alphaPairsChanged = 0  # 用来记录alpha是否已经进行了优化
             for i in range(m):  # 选择数据集中的每个数据向量
-                fXi  =float(multiply(alphas,labelMat).T*(dataMatrix*dataMatrix[i,:].T))+b
+                fXi  = float(multiply(alphas, labelMat).T*(dataMatrix*dataMatrix[i, :].T))+b
                 Ei = fXi - float(labelMat[i])
                 if ((labelMat[i]*Ei< -self.tol) and (alphas[i]<self.C)) or ((labelMat[i]*Ei>self.tol) and (alphas[i]>0)): # 如果此向量可以被优化
                     j = selectJrand(i,m)  # 随机选取另一个数据向量
-                    fXj = float(multiply(alphas, labelMat).T*(dataMatrix*dataMatrix[j,:].T))+b
+                    fXj = float(multiply(alphas, labelMat).T*(dataMatrix*dataMatrix[j,:].T))+b # 模型
                     Ej = fXj - float(labelMat[j])
                     alphaIold = alphas[i].copy()
                     alphaJold = alphas[j].copy()
@@ -191,8 +200,10 @@ class SMO(object):
                     # print("iter:%d i :%d ,pairs changed %d"%(iter,i,alphaPairsChanged))
             if (alphaPairsChanged==0):iter+=1
             else: iter=0
-            print("iteration number :%d"%iter)
-        return b,alphas
+            # print("iteration number :%d"%iter)
+        self.b = b
+        self.alphas = alphas
+        return b, alphas
 
 
     # 辅助函数：用于在某个区间内随机选择一个非i整数
@@ -211,7 +222,15 @@ def clipAlpha(aj,H,L):
     return aj
 
 # if __name__=='__main__':
-#     # dataMat,labelMat = smo.loadDataSet(fileName)
-#     smo =SMO()
-#     smo.smoP(40)
-#     # print(smo.X)
+#     smo = SMO()
+#     smo.smoP(100)
+#     ws = smo.calcWs()
+#     #
+#     for i in range(smo.m):
+#         dataMat = smo.X[i]
+#         rs = dataMat*ws+smo.b
+#         if rs>0:
+#             rs = 1
+#         else :
+#             rs = -1
+#         print(rs ,"  ",float(smo.labelMat[i]),"  ",rs-float(smo.labelMat[i]))
