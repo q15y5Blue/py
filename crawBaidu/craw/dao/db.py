@@ -16,9 +16,7 @@ class DBConnect(object):
     }
 
     def __init__(self):
-        # create a connection pool implicitly -> conn.connct(pool_name="xxx", pool_size="3", **config)
         self.connect = conn.connect(**self.config)
-        # self.pool = pool(pool_name="myPool", pool_size=6, **self.config)
 
     def __del__(self):
         try:
@@ -53,14 +51,3 @@ class DBConnect(object):
             self.connect.commit()
         except:
             self.connect.rollback()
-
-#
-# if __name__=='__main__':
-#     con = DBConnect()
-#     str = '😂'
-#     sql = "select id,author,content,date,floor_num,fn,article_id from reply where fn !=0"
-#    #sql = "insert into reply_lzz('id','author','content','date','floor_num','fn','reply_id') values (select id,author,content,date,floor_num,fn,article_id from reply where fn !=0)" %(str)
-#     for li in con.get_allData(sql):
-#         con.update_info("insert into reply_lzz(id,author,content,date,floor_num,fn,reply_id) values('%s','%s','%s','%s','%s','%s','%s')"\
-#                         %(li[0],li[1],li[2],li[3],li[4],li[5],li[6]))
-#     con.connect.close()

@@ -8,6 +8,7 @@ from crawBaidu.entity import *
 import json
 import re
 from bs4 import BeautifulSoup
+from mysql.connector.errors import IntegrityError
 
 class crawArticle(object):
     def __init__(self):#初始化的url都是有参数的
@@ -30,7 +31,6 @@ class crawArticle(object):
                 ar.username = result.find('span', class_='ti_author').text.strip()
                 ar.user.img_path = result.find('img')['src']
                 ar.user.username = result.find('span',class_='ti_author').text.strip()
-
                 conn = DBConnect()
                 flag = conn.get_date("select id from article where id = '%s' " % ar.id)
                 if flag is None:
@@ -42,7 +42,6 @@ class crawArticle(object):
 
 
     def parseReplyDetails(self, articleObj,doc):
-        beSession = BaseSession()
         soup = BeautifulSoup(doc, "html.parser")
         list = soup.find_all('li', class_='list_item')
         replyList = []
@@ -60,14 +59,14 @@ class crawArticle(object):
             rp.date = getTime(li.find('span', class_='list_item_time').text.strip())
             rp.user.username = li.find('span', class_="user_name").text.strip()
             rp.user.img_path = str(li.find('img', class_="user_img")['src']).replace("amp;", "")
-            # 对于回复的回复，并不再添加一层，而是并列与父类在一层
             childList = li.find('ul', class_='flist') # 有flist属性才会有回复
             if childList is not None:
                 if li.find('a', class_='fload_more_btn') is not None:
+                    continue
                     # 拥有楼中楼
-                    lp = self.parseDetailsOfReply(articleObj, repd=rp)
-                    if(len(lp)>0):
-                        childRsList.extend(lp)
+                    # lp = self.parseDetailsOfReply(articleObj, repd=rp)
+                    # if(len(lp)>0):
+                    #     childRsList.extend(lp)
                 else:
                     for child in childList:
                         # li of child
@@ -78,12 +77,14 @@ class crawArticle(object):
                             chi.author = usinfo['un']
                             chi.id = usinfo['pid']
                             chi.fn = rp.id
+                            chi.user.username = chi.author
                             # chi.articleId = rp.id
                             childRsList.append(chi)
             replyList.append(rp)
         replyList.extend(childRsList)
         return replyList
 
+    # 楼中楼取消爬取,信息量小,速度慢
     # 获取评论的回复
     def parseDetailsOfReply(self, article, repd):
         url ="https://tieba.baidu.com/mo/q/flr?kz=%s&pid=%s&is_ajax=1&has_url_param=0&template=lzl" %(article.id, repd.id)
@@ -141,7 +142,7 @@ class crawArticle(object):
         offSet = int(infoJson['data']['page']['page_size'])
         rsList = []
         for nowPage in range(1, totalPage+1):
-            print("nowPage",nowPage,"  totalPage",totalPage,"  offSet:",offSet)
+            # print("nowPage",nowPage,"  totalPage",totalPage,"  offSet:",offSet)
             if nowPage ==1:
                 doct = infoJson['data']['html']
                 list = self.parseReplyDetails(articleObj=article, doc=doct)
@@ -168,6 +169,7 @@ class crawArticle(object):
         self.importReply(ar)
         Con.closeCnt()
 
+
     def importReply(self,art):
         con = DBConnect()
         for li in art.replyList:
@@ -176,10 +178,31 @@ class crawArticle(object):
                 li.fn = 0 if li.fn == "" else li.fn
                 li.floor_num = -1 if li.floor_num == "" else li.floor_num
                 li.date = art.date if li.date == "" or li.date == None  else li.date
-                sql = "insert into reply(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')"%(
-                    li.id, li.content, li.author,li.date,li.floor_num, li.fn, art.id)
-                # print(sql)
-                con.update_info(sql)
+                # print(li.user.img_path)
+                # print(li.user.username)
+                if li.fn==0:
+                    try:
+                        userFlag = li.user.checkUserByUserName(li.user.username)
+                        if userFlag is None:
+                            con.update_info("insert into users(img_path,username) values ('%s','%s') " % (
+                            li.user.img_path, li.user.username))
+                        sql = "insert into reply(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')"%(
+                            li.id, li.content, li.author,li.date,li.floor_num, li.fn, art.id)
+                        con.update_info(sql)
+                    # print(sql)
+                    except IntegrityError:
+                        print("Duplicate entry '123197159870' for key 'PRIMARY'")
+                else:
+                    try:
+                        userFlag = li.user.checkUserByUserName(li.user.username)
+                        if userFlag is None:
+                            con.update_info("insert into users(img_path,username) values ('%s','%s') " % (
+                                li.user.img_path, li.user.username))
+                        sql = "insert into reply_lzz(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')" % (
+                            li.id, li.content, li.author, li.date, li.floor_num, li.fn, art.id)
+                        con.update_info(sql)
+                    except IntegrityError:
+                        print("Duplicate entry '123197159870' for key 'PRIMARY'")
         con.closeCnt()
 
 

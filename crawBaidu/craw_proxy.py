@@ -7,14 +7,10 @@ import requests
 import requests.exceptions as exc
 import re
 import time
+import random as rad
 
 head = {
     'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-}
-MyCookies = {
-    'Hm_lpvt_0cf76c77469e965d2957f0553e6ecf59':'1542763729',
-    'Hm_lvt_0cf76c77469e965d2957f0553e6ecf59':'1542763640',
-    '_free_proxy_session':'BAh7B0kiD3Nlc3Npb25faWQGOgZFVEkiJTI3OWE3MGRlNDNjOGUyYWI5M2Q4N2VkMjY0Mzg5NTQzBjsAVEkiEF9jc3JmX3Rva2VuBjsARkkiMUJBcDY3TFpMTGFwQWZxL0UwdFZibS95T2plM25pb0dHWStkM1ZlK2NvMmM9BjsARg',
 }
 class NetProtocol(object):
     def __init__(self, location=None, port=None, type=None):
@@ -44,7 +40,7 @@ class NetProtocol(object):
             self.prox = {'http': self.ip, 'https': self.ip}
         except Exception as e:
             print("代理吃空了，放缓爬虫速度")
-            time.sleep(2)
+            time.sleep(rad.uniform(0,1))
         cnt.closeCnt()
 
     #获取所有proxies
@@ -85,17 +81,32 @@ class NetProtocol(object):
                     location = str(location_ip.group(0))
                     port = str(location_port.group(0))
                     types = str(location_type.group(0))
-                    ip = NetProtocol(location=location, port=port,type=types)
+                    ip = NetProtocol(location=location, port=port, type=types)
                     ipList.append(ip)
             return ipList
+
+    def craw_ipListJson(self, url):
+        req = requests.get(url, timeout=12, headers=head)
+        if req.status_code == 200:
+            req = req.json()
+            ipList = []
+            trList = req['proxies']
+            for tr in trList:
+                location = str(tr['ip'])
+                port = str(tr['port'])
+                types = "https" if str(tr['is_https']) == 'true' else 'http'
+                ip = NetProtocol(location=location, port=port, type=types)
+                ipList.append(ip)
+            return ipList
+
 
     # 执行爬虫,并将代理存到数据库中
     def pagingCraw(self):
         list = []
         flag = 0
-        for x in range(1, 35):
-            url = "http://www.xicidaili.com/nn/%d"%(x)
-            reList= self.craw_ipList(url)
+        for x in range(1, 4):
+            url = "http://www.yqius.cn:8899/api/v1/proxies?page=%d"%(x)
+            reList= self.craw_ipListJson(url)#
             if reList is not None:
                 list.extend(reList)
                 flag = 1

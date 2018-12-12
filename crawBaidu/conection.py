@@ -6,6 +6,7 @@ import requests.exceptions as exc
 from crawBaidu.craw_proxy import NetProtocol
 import time
 
+
 class BaseSession(object):
     def __init__(self):
         self.prepareSession()
@@ -28,7 +29,7 @@ class BaseSession(object):
             proxies = NetProtocol(location='1')
             time.sleep(0.5)
         self.session.proxies.update(proxies.prox)
-        timeout = 20
+        timeout = 30
         flag = False
         try:
             return self.session.get(url, timeout=timeout, proxies=proxies.prox)
@@ -63,7 +64,7 @@ class BaseSession(object):
             # proxies = self.proxy
         else:
             proxies = NetProtocol(location='1')
-            time.sleep(0.5)
+            # time.sleep(0.5)
         self.session.proxies.update(proxies.prox)
         timeout = 20
         flag = False
@@ -84,10 +85,11 @@ class BaseSession(object):
         if flag and proxies is not None:
             print("当前代理", proxies, "不可用,0.1s后尝试使用其他代理连接,此代理将会被删除.")
             if proxies.testProxy() is not True:proxies.deleteProxy()
-            time.sleep(0.1)
+            time.sleep(0.01)
             # 这里碰到的小问题,如果直接调用self.reqGet方法,在上层调用reqGet会为空 所以return self....
             return self.reqGet(url, proxies=True)
 # if __name__=="__main__":
 #     ba = BaseSession()
 #     re = ba.reqGet(url="http://icanhazip.com/", proxies=True)
 #     print(re.text)
+# http://www.yqius.xyz:8899/api/v1/proxies?page=1
