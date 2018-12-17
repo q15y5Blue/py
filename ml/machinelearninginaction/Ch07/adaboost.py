@@ -35,7 +35,6 @@ def stumpClassify(dataMatrix,dimen,threshVal,threshIneq):#just classify the data
         retArray[dataMatrix[:,dimen] > threshVal] = -1.0
     return retArray
     
-
 def buildStump(dataArr,classLabels,D):
     dataMatrix = mat(dataArr); labelMat = mat(classLabels).T
     m,n = shape(dataMatrix)
@@ -50,8 +49,8 @@ def buildStump(dataArr,classLabels,D):
                 predictedVals = stumpClassify(dataMatrix,i,threshVal,inequal)#call stump classify with i, j, lessThan
                 errArr = mat(ones((m,1)))
                 errArr[predictedVals == labelMat] = 0
-                weightedError = D.T*errArr  #calc total error multiplied by D
-                #print "split: dim %d, thresh %.2f, thresh ineqal: %s, the weighted error is %.3f" % (i, threshVal, inequal, weightedError)
+                weightedError = D.T*errArr  # calc total error multiplied by D
+                # print "split: dim %d, thresh %.2f, thresh ineqal: %s, the weighted error is %.3f" % (i, threshVal, inequal, weightedError)
                 if weightedError < minError:
                     minError = weightedError
                     bestClasEst = predictedVals.copy()
@@ -69,7 +68,7 @@ def adaBoostTrainDS(dataArr,classLabels,numIt=40):
     for i in range(numIt):
         bestStump,error,classEst = buildStump(dataArr,classLabels,D)#build Stump
         #print "D:",D.T
-        alpha = float(0.5*log((1.0-error)/max(error,1e-16)))#calc alpha, throw in max(error,eps) to account for error=0
+        alpha = float(0.5*log((1.0-error)/max(error,1e-16))) # calc alpha, throw in max(error,eps) to account for error=0
         bestStump['alpha'] = alpha  
         weakClassArr.append(bestStump)                  #store Stump Params in Array
         #print "classEst: ",classEst.T

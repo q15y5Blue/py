@@ -6,7 +6,7 @@ import random
 import requests
 
 class Proxies(object):
-    def __init__(self, db=None):
+    def __init__(self, db=None): # 代理可用
         if db == None:
             self.location = ''
             self.port = ''
@@ -33,6 +33,7 @@ class Proxies(object):
     def __str__(self):
         return str(self.prox)
 
+    # test Proxy
     def testProxy(self):
         url = "http://icanhazip.com/"
         print("正在测试代理连接", self.prox)
@@ -41,14 +42,17 @@ class Proxies(object):
             if req.text.strip() == str(self.location).strip():
                 print(self.prox, "代理可用")
                 return True
-        except Exception:
+        except Exception as exc:
+            print("测试代理过程中出错",exc)
             return False
 
     def deleteProxy(self):
         db = DBConnect()
         try:
-            db.update_info("delete from proxy where location='%s'" % (self.location))
+            db.update_info("delete from proxy where location='%s' " % (self.location))
         except Exception:
             print("删除过程中异常")
         db.closeCnt()
 
+if __name__ == "__main__":
+    print(Proxies(db='xx'))

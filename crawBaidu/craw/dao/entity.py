@@ -20,13 +20,19 @@ class reply(object):
         self.date = art if self.date == "" or self.date == None else self.date
         self.user.insertAuthor(con)
         if self.fn==0:
-            sql = "insert into reply(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')" % (
-                self.id, self.content, self.author, self.date, self.floor_num, self.fn, art.id)
-            con.update_info(sql)
+            try:
+                sql = "insert into reply(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')" % (
+                    self.id, self.content, self.author, self.date, self.floor_num, self.fn, art.id)
+                con.update_info(sql)
+            except Exception:
+                print("error: sql---:"+sql)
         else:
-            sql = "insert into reply_lzz(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')" % (
-                self.id, self.content, self.author, self.date, self.floor_num, self.fn, art.id)
-            con.update_info(sql)
+            try:
+                sql = "insert into reply_lzz(id,content,author,date,floor_num,fn,article_id)values('%s','%s','%s','%s','%s','%s','%s')" % (
+                    self.id, self.content, self.author, self.date, self.floor_num, self.fn, art.id)
+                con.update_info(sql)
+            except Exception:
+                print("error: sql---:"+sql)
         con.closeCnt()
 
     def __str__(self):
@@ -47,7 +53,6 @@ class article(object):
         con = DBConnect()
         try:
             flag = con.get_date("select id from article where id = '%s' " % self.id)
-            print(flag)
         except Exception:
             print("查询出错")
         con.closeCnt()
@@ -57,19 +62,18 @@ class article(object):
         con = DBConnect()
         userFlag = self.user.checkUserByUserName(con)
         if userFlag is None:
-            self.user.updateUser(con)
+            self.user.insertAuthor(con)
             userFlag = self.user.checkUserByUserName(con)
         sql = "insert into article(id,title,user_id,date,content)  values('%s','%s','%s','%s','%s') " % (
             self.id, self.title, userFlag, self.date, self.content)
         con.update_info(sql)
         con.closeCnt()
         self.importReplyList()
-        print("insert a article")
+        print("insert a article: "+self.title)
 
     def importReplyList(self):
-        print(self.replyList)# error 为空
+        # print(self.replyList)# error 为空
         for li in self.replyList:
-            print(self)
             li.importReply(art=self)
 
 
@@ -79,7 +83,7 @@ class users(object):
         self.username = username
         self.img_path = img_path
 
-    def insertAuthor(self,con=None):
+    def insertAuthor(self, con=None):
         flag = 1
         if con is None:
             flag = 0
@@ -89,7 +93,7 @@ class users(object):
             con.update_info(sql)
         except:
             print("userExists")
-        if flag == 0: con.closeCnt()
+        if flag == 0 : con.closeCnt()
 
     def checkUserByUserName(self,con = None):
         flag = 1
@@ -106,14 +110,3 @@ class users(object):
         else:
             return userFlag[0]
 
-
-    def updateUser(self,con = None):
-        flag = 1
-        if con is None:
-            flag = 0
-            con = DBConnect()
-        try:
-            con.update_info("insert into users(img_path,username) values ('%s','%s') " % (self.img_path, self.username))
-        except Exception:
-            print("checkUserByUserName Error")
-        if flag == 0:con.closeCnt()
