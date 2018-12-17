@@ -4,7 +4,6 @@ from crawBaidu.craw.parser.Parser import Parser
 from crawBaidu.craw.urlPool.UrlManage import UrlManage
 from crawBaidu.craw.dao.entity import article
 
-
 class Execute(object):
     def __init__(self):
         self.urlObj = UrlManage()
@@ -15,7 +14,7 @@ class Execute(object):
     def execute(self, rootUrl):
         self.urlObj.add_new_url(rootUrl)
         count = 0
-        while (self.urlObj.has_new_url()):
+        while self.urlObj.has_new_url():
             count += 1
             new_url = self.urlObj.get_new_url()
             self.parserObj.parserArticleList(new_url)

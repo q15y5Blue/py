@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from crawBaidu.craw.dao.db import DBConnect
 from mysql.connector.errors import IntegrityError
+from crawBaidu.craw.dao.db import DBPool
+po = DBPool().pool
+
 class reply(object):
     def __init__(self):
         self.id = ''
@@ -14,7 +17,7 @@ class reply(object):
         # self.child = []
 
     def importReply(self, art):
-        con = DBConnect()
+        con = DBConnect(pool=po)
         self.fn = 0 if self.fn =="" else self.fn
         self.floor_num = -1 if self.floor_num == "" else self.floor_num
         self.date = art if self.date == "" or self.date == None else self.date
@@ -50,7 +53,7 @@ class article(object):
         self.replyList = [reply()]
 
     def checkArticleExists(self):
-        con = DBConnect()
+        con = DBConnect(pool=po)
         try:
             flag = con.get_date("select id from article where id = '%s' " % self.id)
         except Exception:
@@ -59,7 +62,7 @@ class article(object):
         return flag
 
     def importArticle(self):
-        con = DBConnect()
+        con = DBConnect(pool=po)
         userFlag = self.user.checkUserByUserName(con)
         if userFlag is None:
             self.user.insertAuthor(con)
@@ -87,7 +90,7 @@ class users(object):
         flag = 1
         if con is None:
             flag = 0
-            con = DBConnect()
+            con = DBConnect(pool=po)
         try:
             sql ="insert into users(img_path,username) values ('%s','%s') "%(self.img_path,self.username)
             con.update_info(sql)
@@ -99,7 +102,7 @@ class users(object):
         flag = 1
         if con is None:
             flag = 0
-            con = DBConnect()
+            con = DBConnect(pool=po)
         try:
             userFlag = con.get_date("select id,username from users where username = '%s' " % self.username)
         except Exception:

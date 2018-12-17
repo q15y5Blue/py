@@ -36,15 +36,15 @@ def parseData(html_datas, p):
         print(name)
         content = li.select(".j_d_post_content")
         tail_info = li.select(".tail-info")
-        if(content.__len__()==0):
+        if content.__len__()==0:
             continue
         resul.name = name.strip()
         resul.content = content.__getitem__(0).text.strip('').strip()
         resul.page = p
-        if(tail_info.__len__() == 3):  #  用电脑时候
+        if tail_info.__len__() == 3:  #  用电脑时候
             resul.tall = tail_info.__getitem__(1).text
             resul.time = tail_info.__getitem__(2).text
-        elif (tail_info.__len__() == 4):  #  手机
+        elif tail_info.__len__() == 4:  #  手机
             resul.tall = tail_info.__getitem__(2).text
             resul.time = tail_info.__getitem__(3).text
         rs_list.append(resul)

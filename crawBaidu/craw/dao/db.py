@@ -1,10 +1,11 @@
 # coding:utf-8
 # 弃用,使用Mysql官方库
-import MySQLdb
-import mysql.connector as conn
-from mysql.connector.pooling import MySQLConnectionPool as Pool
+from crawBaidu.craw.util.log import *
+from mysql.connector.pooling import MySQLConnectionPool
 from mysql.connector.constants import ClientFlag
-from mysql.connector.errors import InterfaceError as inError
+from mysql.connector.pooling import PooledMySQLConnection
+from mysql.connector import connect
+
 config = {
     'user': 'qiuyu',
     'database': 'qiuyu',
@@ -13,22 +14,26 @@ config = {
     'charset': 'utf8mb4',
     'client_flags': [ClientFlag.SSL],
 }
-# pool = Pool(pool_name="myPool", pool_size=8, **config)
 
 class DBPool(object):
     def __init__(self):
-        self.pool = Pool(pool_name="myPool", pool_size=12, **config)
+        self.createPool()
+
+    def createPool(self):
+        try:
+            self.pool = MySQLConnectionPool(pool_name="myPool", pool_size=12, **config)
+            info("pool created")
+        except:
+            error("SomeError")
+
 
 class DBConnect(object):
-    def __init__(self):
-        self.pool = DBPool()
-        self.connect = self.getCon()
+    def __init__(self, pool=None):
+        if pool is None:
+            self.connect = connect(**config)
+        elif pool is not None:
+            self.connect = pool.get_connection()
 
-    def getCon(self):
-        try:
-            return self.pool.pool.get_connection()
-        except Exception as e:
-            print("连接出错:", e)
 
     def get_date(self, sql):
         cursor = self.connect.cursor(buffered=True)
@@ -39,10 +44,10 @@ class DBConnect(object):
 
     def closeCnt(self):
         try:
+            # info("connection returned")
             self.connect.close()
         except Exception as e:
-            print("关闭失败 ",e)
-            pass
+            error("关闭失败 ", e)
 
     def get_allData(self, sql):
         cursor = self.connect.cursor(buffered=True)
@@ -57,5 +62,16 @@ class DBConnect(object):
             cursor.execute(sql)
             self.connect.commit()
             cursor.close()
-        except:
+        except Exception as e:  #
+            notset(e)
             self.connect.rollback()
+
+
+# if __name__=='__main__':
+#     pool = DBPool()
+#     db = DBConnect(pool=pool.pool)
+#     sql = 'select location,port from proxy order by rand()'
+#     print(type(db.connect))
+#     print(db.get_date(sql))
+#     print(db.get_date(sql))
+#     print(db.get_date(sql))

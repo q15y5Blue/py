@@ -28,7 +28,7 @@ class Parser:
                 else:
                     return jsonData
             except:
-                print(req.content)
+                print(req.content, ' :code: ',req.status_code)
 
     # parser ArticleList
     def parserArticleList(self, url):
@@ -61,7 +61,7 @@ class Parser:
             return
         rsList = []
         for nowPage in range(1, totalPage + 1):
-            print("parsing .... page: ",nowPage)
+            print("parsing .... page: ", nowPage)
             if nowPage == 1:
                 doct = infoJson.get('html')
                 list = self.parseReplyDetails(articleObj=article, doc=doct)
