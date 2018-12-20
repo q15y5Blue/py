@@ -2,9 +2,9 @@
 # 爬主题
 import time
 import datetime
-from crawBaidu.conection import BaseSession
-from crawBaidu.db import DBConnect
-from crawBaidu.entity import *
+from crawBaidu.old.conection import BaseSession
+from crawBaidu.old.db import DBConnect
+from crawBaidu.old.entity import *
 import json
 import re
 from bs4 import BeautifulSoup

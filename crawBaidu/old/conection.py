@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # request基础
 import requests
-from crawBaidu import headers as heads
+from crawBaidu.old import headers as heads
 import requests.exceptions as exc
-from crawBaidu.craw_proxy import NetProtocol
+from crawBaidu.old.craw_proxy import NetProtocol
 import time
 
 

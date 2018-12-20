@@ -1,7 +1,7 @@
 # coding:utf8
 # 以前写的,暂时不用.
 import time
-from crawBaidu import db as din
+from crawBaidu.old import db as din
 import requests
 from bs4 import BeautifulSoup
 

@@ -1,10 +1,8 @@
 # coding:utf-8
-from crawBaidu.headers import headers
-from crawBaidu.conection import *
-from crawBaidu.db import DBConnect
+from crawBaidu.old.conection import *
+from crawBaidu.old.db import DBConnect
 from bs4 import BeautifulSoup
 import requests
-import requests.exceptions as exc
 import re
 import time
 import random as rad

@@ -33,7 +33,7 @@ class users(object):
         self.img_path = img_path
 
     def checkUserByUserName(self,username):
-        from crawBaidu.db import DBConnect
+        from crawBaidu.old.db import DBConnect
         con = DBConnect()
         userFlag = con.get_date("select id,username from users where username = '%s' " % username)
         con.closeCnt()
