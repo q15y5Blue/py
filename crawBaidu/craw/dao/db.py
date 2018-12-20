@@ -1,11 +1,11 @@
 # coding:utf-8
-# 弃用,使用Mysql官方库
+# 弃用, 使用Mysql官方库
 from crawBaidu.craw.util.log import *
 from mysql.connector.pooling import MySQLConnectionPool
 from mysql.connector.constants import ClientFlag
-from mysql.connector.pooling import PooledMySQLConnection
 from mysql.connector import connect
-
+from mysql.connector.errors import IntegrityError
+import re
 config = {
     'user': 'qiuyu',
     'database': 'qiuyu',
@@ -62,16 +62,6 @@ class DBConnect(object):
             cursor.execute(sql)
             self.connect.commit()
             cursor.close()
-        except Exception as e:  #
-            notset(e)
+        except IntegrityError as e:  #
             self.connect.rollback()
-
-
-# if __name__=='__main__':
-#     pool = DBPool()
-#     db = DBConnect(pool=pool.pool)
-#     sql = 'select location,port from proxy order by rand()'
-#     print(type(db.connect))
-#     print(db.get_date(sql))
-#     print(db.get_date(sql))
-#     print(db.get_date(sql))
+            return e

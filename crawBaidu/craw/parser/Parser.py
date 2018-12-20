@@ -111,7 +111,6 @@ class Parser:
         replyList.extend(childRsList)
         return replyList
 
-
 if __name__ == '__main__':
     par = Parser()
     url = "https://tieba.baidu.com/mo/q/m?kw=剑网3&pn=%d&lm=0&cid=0&has_url_param=0&is_ajax=1"

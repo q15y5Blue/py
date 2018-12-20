@@ -25,6 +25,6 @@ class UrlManage:
     # def add_new_url_list(self, url_list):
     #     if len(url_list) == 0 or url_list is None:
     #         return
-    #     for url in url_list:
-    #         strs = "http://travel.qunar.com/space/follow/list?userId=%s" % url
+    #     for page in (0, 11):
+    #         strs = "https://tieba.baidu.com/mo/q/m?kw=剑网3&pn=%d&lm=0&cid=0&has_url_param=0&is_ajax=1" % page
     #         self.add_new_url(strs)

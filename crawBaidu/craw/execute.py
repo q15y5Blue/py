@@ -9,7 +9,7 @@ class Execute(object):
         self.urlObj = UrlManage()
         self.downloaderObj = Downloader()
         self.parserObj = Parser()
-        self.articleObj = article()
+        self.asssssrticleObj = article()
 
     def execute(self, rootUrl):
         self.urlObj.add_new_url(rootUrl)
@@ -18,8 +18,9 @@ class Execute(object):
             count += 1
             new_url = self.urlObj.get_new_url()
             self.parserObj.parserArticleList(new_url)
-            # articleObj.importArticle()
             print("次数呢:", count)
+            if count < 100:
+                self.urlObj.add_new_url(root_url)
 
 
 if __name__ == '__main__':
