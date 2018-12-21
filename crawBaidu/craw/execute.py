@@ -3,18 +3,18 @@ import sys,os
 pwd = os.getcwd()
 grader_father = os.path.abspath(os.path.dirname(pwd) + os.path.sep + "..")
 sys.path.extend([grader_father])
+print(grader_father)
+
 from crawBaidu.craw.download.DownLoader import Downloader
 from crawBaidu.craw.parser.Parser import Parser
 from crawBaidu.craw.urlPool.UrlManage import UrlManage
-from crawBaidu.craw.dao.entity import article
 
-
+# reply date 有时会为空?
 class Execute(object):
     def __init__(self):
         self.urlObj = UrlManage()
         self.downloaderObj = Downloader()
         self.parserObj = Parser()
-        self.asssssrticleObj = article()
 
     def execute(self, rootUrl):
         self.urlObj.add_new_url(rootUrl)
@@ -25,7 +25,7 @@ class Execute(object):
             self.parserObj.parserArticleList(new_url)
             print("次数呢:", count)
             if count < 100:
-                self.urlObj.add_new_url(root_url)
+                self.urlObj.add_new_url(rootUrl)
             else:
                 break
 

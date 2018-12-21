@@ -101,7 +101,7 @@ class users(object):
         if con is None:
             flag = 0
             con = DBConnect(pool=po)
-        sql ="insert into users(img_path, username) values ('%s','%s') "%(self.img_path, self.username)
+        sql ="insert into users(img_path, username) values ('%s','%s') " % (self.img_path, self.username)
         flag = con.update_info(sql)
         if flag == 0 : con.closeCnt()
 

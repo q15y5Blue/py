@@ -17,6 +17,7 @@ config = {
 
 class DBPool(object):
     def __init__(self):
+        self.pool = ''
         self.createPool()
 
     def createPool(self):
