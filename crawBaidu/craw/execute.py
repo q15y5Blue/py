@@ -31,9 +31,9 @@ if __name__ == '__main__':
     key1 = '剑网3'
     key2 = '双梦镇'
     key3 = '长歌门'
-    sys.argv.append(key1)
-    sys.argv.append(key2)
-    sys.argv.append(key3)
+    # sys.argv.append(key1)
+    # sys.argv.append(key2)
+    # sys.argv.append(key3)
     urlList = []
     for key in sys.argv[1:]:
         urlList.append(url % key)
