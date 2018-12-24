@@ -1,11 +1,13 @@
 # coding:utf-8
-import sys,os
+import sys, os
 pwd = os.getcwd()
 grader_father = os.path.abspath(os.path.dirname(pwd) + os.path.sep + "..")
 sys.path.extend([grader_father])
+
 from crawBaidu.craw.download.DownLoader import Downloader
 from crawBaidu.craw.parser.Parser import Parser
 from crawBaidu.craw.urlPool.UrlManage import UrlManage
+from crawBaidu.craw.util.log import *
 
 # reply date 有时会为空?
 class Execute(object):
@@ -14,26 +16,26 @@ class Execute(object):
         self.downloaderObj = Downloader()
         self.parserObj = Parser()
 
-    def execute(self, rootUrl):
-        page = 0
-        for page in (50):
-            url = root_url % page
-            self.urlObj.add_new_url(url)
-        # self.urlObj.add_new_url(rootUrl)
+    def execute(self):
         count = 0
         while self.urlObj.has_new_url():
             count += 1
             new_url = self.urlObj.get_new_url()
             self.parserObj.parserArticleList(new_url)
-            print("次数呢:", count)
-            if count < 100:
-                self.urlObj.add_new_url(rootUrl)
-            else:
-                break
+            info("次数呢:", count)
 
 
 if __name__ == '__main__':
-    root_url = "https://tieba.baidu.com/mo/q/m?kw=剑网3&pn=%d&lm=0&cid=0&has_url_param=0&is_ajax=1"
     spider = Execute()
-    spider.execute(root_url)
-    # print(path)
+    url = "https://tieba.baidu.com/mo/q/m?kw=%s&lm=0&cid=0&has_url_param=0&is_ajax=1"
+    key1 = '剑网3'
+    key2 = '双梦镇'
+    key3 = '长歌门'
+    sys.argv.append(key1)
+    sys.argv.append(key2)
+    sys.argv.append(key3)
+    urlList = []
+    for key in sys.argv[1:]:
+        urlList.append(url % key)
+    spider.urlObj.add_new_url_list(url_list=urlList, pageSize=100)
+    spider.execute()

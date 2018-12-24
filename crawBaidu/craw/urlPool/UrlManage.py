@@ -22,9 +22,10 @@ class UrlManage:
             self.newUrls.add(url)
 
     # url list added
-    # def add_new_url_list(self, url_list):
-    #     if len(url_list) == 0 or url_list is None:
-    #         return
-    #     for page in (0, 11):
-    #         strs = "https://tieba.baidu.com/mo/q/m?kw=剑网3&pn=%d&lm=0&cid=0&has_url_param=0&is_ajax=1" % page
-    #         self.add_new_url(strs)
+    def add_new_url_list(self, url_list=None, pageSize=100):
+        if len(url_list) == 0 or url_list is None:
+            return
+        for u in url_list:
+            u = u + '&pn=%d'
+            for page in range(0, pageSize):
+                self.add_new_url(u % page)
