@@ -22,7 +22,7 @@ class Execute(object):
             count += 1
             new_url = self.urlObj.get_new_url()
             self.parserObj.parserArticleList(new_url)
-            info("次数呢:", count)
+            info(count)
 
 
 if __name__ == '__main__':
@@ -37,5 +37,5 @@ if __name__ == '__main__':
     urlList = []
     for key in sys.argv[1:]:
         urlList.append(url % key)
-    spider.urlObj.add_new_url_list(url_list=urlList, pageSize=100)
+    spider.urlObj.add_new_url_list(url_list=urlList, pageSize=5)
     spider.execute()

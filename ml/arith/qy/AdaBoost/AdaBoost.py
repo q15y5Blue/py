@@ -28,6 +28,7 @@ def loadDataSet(fileName):
         labelMat.append(float(curLine[-1]))
     return dataMat, labelMat
 
+
 # this is always the Fei G
 # 用于测试是否有某个小鱼或大于我们正在测试的阈值,淘工作最大最小分类
 def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):  # just classify the data
@@ -67,11 +68,46 @@ def buildStump(dataArr, classLabels, D):
                     bestStump['ineq'] = inequal
     return bestStump, minError, bestClasEst
 
-#
+
+# 基于单层决策树的AdaBoost训练过程
+def adaBoostTrainDS(dataArr, classLabels, numIt= 40):
+    weakClassArr = []
+    m = shape(dataArr)[0]
+    D = mat(ones((m,1))/m)# D数据点的权重,一开始,权重相等,算法会在增加错分数据的权重的同事,降低正确分类数据的权重
+    aggClassEst = mat(zeros((m,1)))# aggClassEst 记录每个数据点的类别估计累计值
+    for i in range(numIt):
+        bestStump, error, classEst = buildStump(dataArr,classLablels,D)
+        print("D:", D.T)
+        alpha = float(0.5*log((1.0-error)/max(error, 1e-16)))# alpha: 表示总分类器本层决策树输出结果的权重
+        bestStump['alpha'] = alpha
+        weakClassArr.append(bestStump)
+        print("classEst: ", classEst.T)
+        expon = multiply(-1*alpha*mat(classLablels).T, classEst)
+        D = multiply(D, exp(expon))
+        D = D/D.sum()
+        aggClassEst += alpha*classEst
+        print("aggClassEst : ", aggClassEst.T)
+        aggErrors = multiply(sign(aggClassEst) != mat(classLablels).T, ones((m ,1)))
+        errorRate = aggErrors.sum()/m
+        print("total error: ", errorRate, "\n")
+        if errorRate == 0.0:break
+    return weakClassArr
+
+# 利用训练出的多个弱分类器进行分类
+def adaClassify(datToclass,classifierArr):
+    dataMatrix = mat(datToclass)
+    m = shape(dataMatrix)[0]
+    aggClassEst = mat(zeros((m,1)))
+    for i in range(len(classifierArr)):
+        classEst =stumpClassify(dataMatrix,classifierArr[i]['dim'],
+                                classifierArr[i]['thresh'],classifierArr[i]['ineq'])
+        aggClassEst += classifierArr[i]['alpha']*classEst
+        print(aggClassEst)
+    return sign(aggClassEst)
+
 if __name__ == "__main__":
     D = mat(ones((5, 1))/5)
     dataMat, classLablels = loadSimpData()
-    bestStump, minError, bestClassEst = buildStump(dataMat, classLablels, D)
-    print(bestStump)
-    print(minError)
-    print(bestClassEst)
+    # bestStump, minError, bestClassEst = buildStump(dataMat, classLablels, D)
+    classifierArray = adaBoostTrainDS(dataMat,classLablels, 30)
+    adaClassify([[5,5],[0,0]],classifierArr=classifierArray)
