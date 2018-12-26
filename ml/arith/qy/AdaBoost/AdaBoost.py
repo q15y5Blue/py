@@ -90,8 +90,10 @@ def adaBoostTrainDS(dataArr, classLabels, numIt= 40):
         aggErrors = multiply(sign(aggClassEst) != mat(classLablels).T, ones((m ,1)))
         errorRate = aggErrors.sum()/m
         print("total error: ", errorRate, "\n")
-        if errorRate == 0.0:break
+        if errorRate == 0.0:
+            break
     return weakClassArr
+
 
 # 利用训练出的多个弱分类器进行分类
 def adaClassify(datToclass,classifierArr):
