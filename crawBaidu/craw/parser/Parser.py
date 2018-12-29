@@ -28,39 +28,52 @@ class Parser:
                 else:
                     return jsonData
             except:
-                print(req.content, ' :code: ',req.status_code)
+                print(req.content, ' :code: ', req.status_code)
+        else:
+            error("parserNot 200")
 
     # parser ArticleList
     def parserArticleList(self, url):
+        print("Parsering staring..")
         soup = self.parse_url(url)
-        list = soup.find_all('li', class_='tl_shadow tl_shadow_new')
+        # info(soup)
+        list = soup.find_all('li', class_='tl_shadow')
         for result in list:
             print("parser Article ········")
             ar = article()
             ar.title = result.find('div', class_='ti_title').text.strip()
             ar.date = getTime(result.find('span', class_='ti_time').text.strip())
-            ar.id = result.find('a', class_='j_common ti_item')['tid'].strip()
+            ar.id = result.find('a', class_='j_common')['tid'].strip()
             ar.username = result.find('span', class_='ti_author').text.strip()
             ar.user.img_path = result.find('img')['src']
             ar.user.username = result.find('span', class_='ti_author').text.strip()
-            if ar.checkArticleExists() is None:
+            ar.replyNumber = int(result.find('div', class_='btn_reply').text.strip())
+            count = ar.getCountOfArticleReplies()
+            if count is None:
                 ar.replyList = self.crawReplyExecute(ar)
                 ar.importArticle()
-                # return ar
+            elif count is not None and count > ar.replyNumber + 50:
+                ar.replyList = self.crawReplyExecute(ar, reCraw=count)
+                ar.importArticle()
             else:
                 print("article Exists")
                 continue
 
-    def crawReplyExecute(self, article):
+    def crawReplyExecute(self, article, reCraw=None):
         url = "https://tieba.baidu.com/mo/q/m?kz=%s&is_ajax=1&post_type=normal&_t=%d&pn=%s&is_ajax=1"
         articleInfoUrl = url % (article.id, int(time.time()), str(0))
         infoJson = self.parse_url(articleInfoUrl, info=1)
         try:
-            pageInfo = infoJson.get('page'); totalPage = pageInfo.get('total_page'); offSet = pageInfo.get("page_size")
+            pageInfo = infoJson.get('page')
+            totalPage = pageInfo.get('total_page')
+            offSet = pageInfo.get("page_size")
         except:
             return
+        startIndex = 1
+        if reCraw is not None:
+            startIndex = (offSet-1)/offSet + 1
         rsList = []
-        for nowPage in range(1, totalPage + 1):
+        for nowPage in range(startIndex, totalPage + 1):
             print("parsing .... page: ", nowPage)
             if nowPage == 1:
                 doct = infoJson.get('html')

@@ -28,4 +28,5 @@ class UrlManage:
         for u in url_list:
             u = u + '&pn=%d'
             for page in range(0, pageSize):
-                self.add_new_url(u % page*50)
+                # print(u % (page*50))
+                self.add_new_url(u % (page*50))

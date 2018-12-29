@@ -37,8 +37,8 @@ class Downloader:
             time.sleep(0.1)
             return self.reqGet(url, proxy=Proxies(db='cn'))
 
-if __name__ == '__main__':
-    url = 'https://tieba.baidu.com/mo/q/m?kz=5975305662&has_url_param=0&is_ajax=1&post_type=normal&_t=1544507042457&pn=30&is_ajax=1&fid=1185508'
-    down = Downloader()
-    req = down.reqGet(url, proxy=Proxies(db='cn'))
-    print(req.text)
+# if __name__ == '__main__':
+#     url = 'https://tieba.baidu.com/mo/q/m?kz=5975305662&has_url_param=0&is_ajax=1&post_type=normal&_t=1544507042457&pn=30&is_ajax=1&fid=1185508'
+#     down = Downloader()
+#     req = down.reqGet(url, proxy=Proxies(db='cn'))
+#     print(req.text)

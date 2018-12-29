@@ -56,6 +56,7 @@ class article(object):
         self.date = ''
         self.user = users()
         self.replyList = [reply()]
+        self.replyNumber = 0
 
     def checkArticleExists(self):
         con = DBConnect(pool=po)
@@ -65,6 +66,16 @@ class article(object):
             print("查询出错")
         con.closeCnt()
         return flag
+
+    def getCountOfArticleReplies(self):
+        con = DBConnect(pool=po)
+        try:
+            sql = "select count(r.id) from reply r where r.article_id = '%s' " % self.id
+            count = con.get_date(sql)
+        except Exception as e:
+            error("统计出错")
+        con.closeCnt()
+        return count
 
     def importArticle(self):
         con = DBConnect(pool=po)
