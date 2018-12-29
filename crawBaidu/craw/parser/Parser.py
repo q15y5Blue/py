@@ -48,16 +48,16 @@ class Parser:
             ar.user.img_path = result.find('img')['src']
             ar.user.username = result.find('span', class_='ti_author').text.strip()
             ar.replyNumber = int(result.find('div', class_='btn_reply').text.strip())
+            print(ar.replyNumber)
             count = ar.getCountOfArticleReplies()
-            if count is None:
+            if count is None or count[0] ==0 :
                 ar.replyList = self.crawReplyExecute(ar)
                 ar.importArticle()
-            elif count is not None and count > ar.replyNumber + 50:
+            elif count is not None and count[0] < ar.replyNumber + 50:
                 ar.replyList = self.crawReplyExecute(ar, reCraw=count)
                 ar.importArticle()
             else:
-                print("article Exists")
-                continue
+                print("哈?")
 
     def crawReplyExecute(self, article, reCraw=None):
         url = "https://tieba.baidu.com/mo/q/m?kz=%s&is_ajax=1&post_type=normal&_t=%d&pn=%s&is_ajax=1"
