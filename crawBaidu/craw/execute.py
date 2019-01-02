@@ -30,11 +30,10 @@ if __name__ == '__main__':
     url = "https://tieba.baidu.com/mo/q/m?kw=%s&lm=0&cid=0&has_url_param=0&is_ajax=1"
     key1 = '剑网3'
     key2 = '双梦镇'
-    if len(sys.argv) ==1:
+    if len(sys.argv) == 1:
         sys.argv.append(key1)
         sys.argv.append(key2)
     urlList = []
-
     for key in sys.argv[1:]:
         urlList.append(url % key)
     spider.urlObj.add_new_url_list(url_list=urlList, pageSize=10)

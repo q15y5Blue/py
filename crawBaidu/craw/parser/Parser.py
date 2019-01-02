@@ -39,25 +39,29 @@ class Parser:
         # info(soup)
         list = soup.find_all('li', class_='tl_shadow')
         for result in list:
-            print("parser Article ········")
-            ar = article()
-            ar.title = result.find('div', class_='ti_title').text.strip()
-            ar.date = getTime(result.find('span', class_='ti_time').text.strip())
-            ar.id = result.find('a', class_='j_common')['tid'].strip()
-            ar.username = result.find('span', class_='ti_author').text.strip()
-            ar.user.img_path = result.find('img')['src']
-            ar.user.username = result.find('span', class_='ti_author').text.strip()
-            ar.replyNumber = int(result.find('div', class_='btn_reply').text.strip())
-            print(ar.replyNumber)
-            count = ar.getCountOfArticleReplies()
-            if count is None or count[0] ==0 :
-                ar.replyList = self.crawReplyExecute(ar)
-                ar.importArticle()
-            elif count is not None and count[0] < ar.replyNumber + 50:
-                ar.replyList = self.crawReplyExecute(ar, reCraw=count)
-                ar.importArticle()
-            else:
-                print("哈?")
+            try:
+                print("parser Article ········")
+                ar = article()
+                ar.title = result.find('div', class_='ti_title').text.strip()
+                ar.date = getTime(result.find('span', class_='ti_time').text.strip())
+                ar.id = result.find('a', class_='j_common')['tid'].strip()
+                ar.username = result.find('span', class_='ti_author').text.strip()
+                ar.user.img_path = result.find('img')['src']
+                ar.user.username = result.find('span', class_='ti_author').text.strip()
+                ar.replyNumber = int(result.find('div', class_='btn_reply').text.strip())
+                count = ar.getCountOfArticleReplies()
+                # print(ar.replyNumber,"     ", count[0])
+                if count is None or count[0] == 0:
+                    ar.replyList = self.crawReplyExecute(ar)
+                    ar.importArticle()
+                elif count is not None and count[0] + 50 < ar.replyNumber :
+                    ar.replyList = self.crawReplyExecute(ar, reCraw=count[0])
+                    ar.importArticle()
+                else:
+                    print("article 已有")
+                    continue
+            except Exception as e:
+                error("解析错误")
 
     def crawReplyExecute(self, article, reCraw=None):
         url = "https://tieba.baidu.com/mo/q/m?kz=%s&is_ajax=1&post_type=normal&_t=%d&pn=%s&is_ajax=1"
@@ -71,7 +75,7 @@ class Parser:
             return
         startIndex = 1
         if reCraw is not None:
-            startIndex = (offSet-1)/offSet + 1
+            startIndex = int((reCraw-1)/offSet) + 1
         rsList = []
         for nowPage in range(startIndex, totalPage + 1):
             print("parsing .... page: ", nowPage)
@@ -87,40 +91,46 @@ class Parser:
                 rsList.extend(list)
         return rsList
 
+
     def parseReplyDetails(self, articleObj=None, doc=None):
         soup = BeautifulSoup(doc, "html.parser")
         list = soup.find_all('li', class_='list_item')
         replyList = []
         childRsList = []  # 回复的回复，child of reply
         for li in list:
-            rp = reply()
-            userinf = li['data-info']
-            userinfo = json.loads(userinf)
-            rp.author = userinfo['un']
-            rp.id = userinfo['pid']
-            rp.floor_num = userinfo['floor_num']
-            rp.content = li.find('div', class_='content').text.strip()
-            if rp.floor_num == 1 and articleObj.content == '':
-                articleObj.content = rp.content
-            rp.date = getTime(li.find('span', class_='list_item_time').text.strip())
-            rp.user.username = li.find('span', class_="user_name").text.strip()
-            rp.user.img_path = str(li.find('img', class_="user_img")['src']).replace("amp;", "")
-            childList = li.find('ul', class_='flist')  # 有flist属性才会有回复
-            if childList is not None:
-                if li.find('a', class_='fload_more_btn') is not None:
-                    continue
-                else:
-                    for child in childList:
-                        if type(child).__name__ == 'Tag':
-                            chi = reply()
-                            usinf = child['data-info']
-                            usinfo = json.loads(usinf)
-                            chi.author = usinfo['un']
-                            chi.id = usinfo['pid']
-                            chi.fn = rp.id
-                            chi.user.username = chi.author
-                            childRsList.append(chi)
-            replyList.append(rp)
+            try:
+                rp = reply()
+                userinf = li['data-info']
+                userinfo = json.loads(userinf)
+                rp.author = userinfo['un']
+                rp.id = userinfo['pid']
+                rp.floor_num = userinfo['floor_num']
+                rp.content = li.find('div', class_='content').text.strip()
+                if rp.floor_num == 1 and articleObj.content == '':
+                    articleObj.content = rp.content
+                rp.date = getTime(li.find('span', class_='list_item_time').text.strip())
+                rp.user.username = li.find('span', class_="user_name").text.strip()
+                rp.user.img_path = str(li.find('img', class_="user_img")['src']).replace("amp;", "")
+                childList = li.find('ul', class_='flist')  # 有flist属性才会有回复
+                if childList is not None:
+                    if li.find('a', class_='fload_more_btn') is not None:
+                        continue
+                    else:
+                        for child in childList:
+                            if type(child).__name__ == 'Tag':
+                                chi = reply()
+                                usinf = child['data-info']
+                                usinfo = json.loads(usinf)
+                                chi.author = usinfo['un']
+                                chi.id = usinfo['pid']
+                                chi.fn = rp.id
+                                chi.content = child.find('span', class_='floor_content').text.strip()
+                                chi.user.username = chi.author
+                                childRsList.append(chi)
+                replyList.append(rp)
+            except Exception as e:
+                error(e)
+
         replyList.extend(childRsList)
         return replyList
 

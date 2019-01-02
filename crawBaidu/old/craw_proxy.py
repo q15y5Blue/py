@@ -102,7 +102,7 @@ class NetProtocol(object):
     def pagingCraw(self):
         list = []
         flag = 0
-        for x in range(1, 4):
+        for x in range(1, 6):
             url = "http://www.yqius.cn:8899/api/v1/proxies?page=%d"%(x)
             reList= self.craw_ipListJson(url)#
             if reList is not None:
