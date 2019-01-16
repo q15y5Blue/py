@@ -3,7 +3,7 @@ import sys, os
 pwd = os.getcwd()
 grader_father = os.path.abspath(os.path.dirname(pwd) + os.path.sep + "..")
 sys.path.extend([grader_father])
-
+# import    something that is True. I'm understand you if you are not here .CP
 from crawBaidu.craw.download.DownLoader import Downloader
 from crawBaidu.craw.parser.Parser import Parser
 from crawBaidu.craw.urlPool.UrlManage import UrlManage
@@ -24,7 +24,6 @@ class Execute(object):
             self.parserObj.parserArticleList(new_url)
             info(count)
 
-
 if __name__ == '__main__':
     spider = Execute()
     url = "https://tieba.baidu.com/mo/q/m?kw=%s&lm=0&cid=0&has_url_param=0&is_ajax=1"
@@ -38,3 +37,4 @@ if __name__ == '__main__':
         urlList.append(url % key)
     spider.urlObj.add_new_url_list(url_list=urlList, pageSize=10)
     spider.execute()
+    # Why they don't

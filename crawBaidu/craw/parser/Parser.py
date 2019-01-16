@@ -9,8 +9,8 @@ from crawBaidu.craw.dao.proxy import Proxies
 import time
 import json
 
-#
-class Parser:
+# 可怕啊
+class Parser(object):
     # 公用解析方法,使用BeautifulSoup模块
     def parse_url(self, url, info=None):
         dt = Downloader()
@@ -78,14 +78,13 @@ class Parser:
             startIndex = int((reCraw-1)/offSet) + 1
         rsList = []
         for nowPage in range(startIndex, totalPage + 1):
-            print("parsing .... page: ", nowPage)
+            print("parsing.... page: ", nowPage)
             if nowPage == 1:
                 doct = infoJson.get('html')
                 list = self.parseReplyDetails(articleObj=article, doc=doct)
                 rsList.extend(list)
             else:
-                articleMoreInfoUrl = url % (
-                article.id, int(time.time()), str(offSet * nowPage))  # articleId time pn
+                articleMoreInfoUrl = url % (article.id, int(time.time()), str(offSet * nowPage))  # articleId time pn
                 infoJson = self.parse_url(articleMoreInfoUrl, info=1)
                 list = self.parseReplyDetails(articleObj=article, doc=infoJson.get("html"))
                 rsList.extend(list)
@@ -109,6 +108,8 @@ class Parser:
                 if rp.floor_num == 1 and articleObj.content == '':
                     articleObj.content = rp.content
                 rp.date = getTime(li.find('span', class_='list_item_time').text.strip())
+                # print(li.find('span', class_='list_item_time').text.strip())
+                # print(rp.date)
                 rp.user.username = li.find('span', class_="user_name").text.strip()
                 rp.user.img_path = str(li.find('img', class_="user_img")['src']).replace("amp;", "")
                 childList = li.find('ul', class_='flist')  # 有flist属性才会有回复
@@ -119,10 +120,9 @@ class Parser:
                         for child in childList:
                             if type(child).__name__ == 'Tag':
                                 chi = reply()
-                                usinf = child['data-info']
-                                usinfo = json.loads(usinf)
-                                chi.author = usinfo['un']
-                                chi.id = usinfo['pid']
+                                usInfo = json.loads(child['data-info'])
+                                chi.author = usInfo['un']
+                                chi.id = usInfo['pid']
                                 chi.fn = rp.id
                                 chi.content = child.find('span', class_='floor_content').text.strip()
                                 chi.user.username = chi.author
@@ -130,7 +130,6 @@ class Parser:
                 replyList.append(rp)
             except Exception as e:
                 error(e)
-
         replyList.extend(childRsList)
         return replyList
 

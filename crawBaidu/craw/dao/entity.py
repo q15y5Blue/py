@@ -7,6 +7,7 @@ from crawBaidu.craw.util.log import *
 po = DBPool().pool
 # userList = NameList(200)
 
+#
 class reply(object):
     def __init__(self):
         self.id = ''
@@ -99,7 +100,7 @@ class article(object):
 
 
 class users(object):
-    def __init__(self,id= None, username=None, nick_name=None, img_path=None):
+    def __init__(self, id=None, username=None, nick_name=None, img_path=None):
         self.id = id
         self.username = username
         self.img_path = img_path
@@ -131,4 +132,4 @@ class users(object):
                 self.id = userFlag[0]
                 return self
         except Exception:
-            print("checkUserByUserName Error")
+            error("checkUserByUserName Error")
