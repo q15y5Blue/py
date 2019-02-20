@@ -6,7 +6,7 @@ def getTime(timeStr):
     if '今天' in timeStr:
         timeStr = timeStr.replace("今天", todays)
     todayRe = re.compile('\d{1,2}:\d\d')
-    monthRe = re.compile('\d{1,2}-\d\d.*\d\d:\d\d')
+    monthRe = re.compile('\d{1,2}-\d{1,2}.*\d\d:\d\d')
     yearRe = re.compile('\d{1,4}-\d{1,2}-\d{1,2}.*\d\d:\d\d')
     if (todayRe.match(timeStr)):
         dateStr = todays + ' ' + timeStr
@@ -18,5 +18,5 @@ def getTime(timeStr):
         return timeStr
 
 # if __name__ =='__main__':
-#     strs = "2017-1-13 18:32"
+#     strs = "1-3 18:32"
 #     print(getTime(strs))

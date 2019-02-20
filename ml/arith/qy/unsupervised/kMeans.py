@@ -15,6 +15,7 @@ def loadDataSet(fileName):
 def distEclud(vecA, vecB):
     return sqrt(sum(power(vecA - vecB, 2)))
 
+
 # 为给定数据集构建一个包含k个随机质心的集合. K要在数据集边界之内
 def randCent(dataSet, k):
     n = shape(dataSet)[1]
@@ -25,7 +26,8 @@ def randCent(dataSet, k):
         centroids[:, j] = minJ + rangeJ * random.rand(k, 1)
     return centroids
 
-if __name__ == '__main__':
+
+if __name__ == '__main__' :
     dataMat = mat(loadDataSet("./data/kmeans/testSet.txt"))
     # print(min(dataMat[:, 0]))
     randCent(dataMat, 2)

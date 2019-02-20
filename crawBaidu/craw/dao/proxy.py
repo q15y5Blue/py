@@ -5,13 +5,14 @@ import time
 import random
 import requests
 
+
 class Proxies(object):
     def __init__(self, db=None): # 代理可用
         if db == None:
             self.location = ''
             self.port = ''
             self.type = ''
-            self.ip = self.location + ":"+ self.port
+            self.ip = self.location + ":" + self.port
             self.prox = {'http': self.ip, 'https': self.ip}
         else:
             self.getIp()

@@ -47,7 +47,7 @@ def testRbf(k1=0.1):
     smo.X, smo.labelMat = loadDataSet("../data/svm/testSetRBF2.txt")
     errorCount= 0
     for i in range(smo.m):
-        kernelEval = kernelTrans(sVs, smo.X[i, :],('rbf',k1))
+        kernelEval = kernelTrans(sVs, smo.X[i, :], ('rbf',k1))
         predict = kernelEval.T * multiply(labelSV, smo.alphas[svInd])+smo.b
         if sign(predict)!=sign(smo.labelMat[i]):
             errorCount +=1

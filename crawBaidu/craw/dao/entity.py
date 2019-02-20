@@ -44,6 +44,29 @@ class reply(object):
                 print("error: sql---:"+sql)
         con.closeCnt()
 
+    def getReply(self, sqlStr = None, count=(0, 500)):
+        if sqlStr is None :
+            sqlStr = "select r.* from reply r  where r.content is not null and r.content != '' order by r.date desc "
+        sqlStr = sqlStr + " limit %s,%s " % (count[0], count[1])
+        con = DBConnect(pool=po)
+        try:
+            return con.get_allData(sqlStr)
+        except Exception as e:
+            print("查询出错: ", sqlStr)
+        finally:
+            con.closeCnt()
+
+
+    def getNumbers(self):
+        con = DBConnect(pool=po)
+        try:
+            sql = "select count(r.id) from reply r "
+            return con.get_date(sql)[0]
+        except Exception as e:
+            error(e)
+        finally:
+            con.closeCnt()
+
     def __str__(self):
         return "id:"+str(self.id)+'author:'+self.author+'date:'+self.date+'floor_num:'+str(self.floor_num)+str(self.fn)+'content:'+str(self.content)
 

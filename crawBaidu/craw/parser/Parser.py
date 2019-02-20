@@ -1,6 +1,4 @@
 # coding:utf-8
-import re
-
 from bs4 import BeautifulSoup
 from crawBaidu.craw.download.DownLoader import Downloader
 from crawBaidu.craw.dao.entity import *
@@ -8,6 +6,7 @@ from crawBaidu.craw.parser import *
 from crawBaidu.craw.dao.proxy import Proxies
 import time
 import json
+
 
 # 可怕啊
 class Parser(object):
@@ -132,6 +131,7 @@ class Parser(object):
                 error(e)
         replyList.extend(childRsList)
         return replyList
+
 
 if __name__ == '__main__':
     par = Parser()
