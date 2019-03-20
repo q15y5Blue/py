@@ -10,17 +10,17 @@ from crawSmart.base.qrManager import QrcodeManager
 
 class BaseAction(object):
     def loginAction(self,conf):
-        self.prepareSession()
+        self.prepareSession() # cookies Set
         self.waitForAuth(conf)
-        # self.getPtwebqq()
+        self.getPtwebqq()
         self.getVFwebqq()
         self.getUinandPsessionId()
 
     def prepareSession(self):
         self.clientid = 53999199
         self.psessionid = 1541574616852
-        self.session = requests.Session()
-        self.session.headers.update(req_header)
+        self.session = requests.Session()#session
+        self.session.headers.update(req_header)#header
         self.getUrl(url_login)#第一个ui
         self.session.cookies.update(cookie)
         self.getQRCodeStatus()
@@ -101,8 +101,11 @@ class BaseAction(object):
                     self.nick = str(items[-1].split("'")[1])
                     self.qq = str(int(self.session.cookies['superuin'][1:]))
                     self.urlPtwebqq = items[2].strip().strip("'")
+                    print("urlPtwebqq:",self.urlPtwebqq)
                     t = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
                     self.dbbasename = '%s-%s-contact.db'%(t, self.qq)
+                    self.dbname = self.dbbasename
+                    print("self.dbname :",self.dbname)
                     break
                 else:
                     log.error('获取二维码扫描状态时出错, html="%s"', qrStatus)
@@ -110,13 +113,22 @@ class BaseAction(object):
         except Exception as e:
             log.error(e)
 
-    def getVFwebqq(self):
-        self.getUrl(self.urlPtwebqq)# 获取登录成功的session
-        url = "https://s.web2.qq.com/api/getvfwebqq?ptwebqq=&clientid=%s&psessionid=&t=%s" \
-              %(self.clientid,repr(random.random()* 900000 + 1000000))
-        Referer = "https://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"
-        # Origin = 'https://s.web2.qq.com'
+    def getPtwebqq(self):
         try:
+            print(self.session.cookies)
+            self.getUrl(self.urlPtwebqq)
+            self.ptwebqq = self.session.cookies['ptwebqq']
+            log.info("已获取ptwebqq")
+        except Exception as e:
+            print(e)
+
+    def getVFwebqq(self):
+        try:
+            self.getUrl(self.urlPtwebqq)# 获取登录成功的session
+            url = "https://s.web2.qq.com/api/getvfwebqq?ptwebqq=%s&clientid=%s&psessionid=&t=%s" \
+                  %(self.ptwebqq,self.clientid,repr(random.random()* 900000 + 1000000))
+            Referer = "https://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"
+            Origin = 'https://s.web2.qq.com'
             vfwebqq = self.smartRequest(url)['vfwebqq']
             self.vfwebqq = vfwebqq
             self.ptwebqq = ''

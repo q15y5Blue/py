@@ -75,7 +75,7 @@ def plotBestFit(wei):
     plt.show()
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     dataArr, labelMat = loadDataSet()
     # weights= gradAscent(dataArr, labelMat)
     # 迭代后的随机梯度上升

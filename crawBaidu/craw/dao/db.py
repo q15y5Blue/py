@@ -30,10 +30,13 @@ class DBPool(object):
 
 class DBConnect(object):
     def __init__(self, pool=None):
-        if pool is None:
-            self.connect = connect(**config)
-        elif pool is not None:
-            self.connect = pool.get_connection()
+        try:
+            if pool is None:
+                self.connect = connect(**config)
+            elif pool is not None:
+                self.connect = pool.get_connection()
+        except:
+            error("DB ERROR")
 
 
     def get_date(self, sql):
